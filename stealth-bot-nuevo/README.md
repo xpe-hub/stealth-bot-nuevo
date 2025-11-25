@@ -1,341 +1,252 @@
-# 🤖 Stealth Community Stealth - Bot Avanzado de Discord
+# 🤖 Stealth AntiCheat Bot - Versión 2.0
 
-**Bot de monitoreo y análisis anti-cheat desarrollado por: xpe.nettt**
+Bot de Discord avanzado con funcionalidades anti-cheat, análisis inteligente del servidor y detección automática de amenazas para servidores de gaming.
 
-## 🛡️ **Descripción**
+## ✨ Características Principales
 
-El **Stealth-AntiCheat-bot** es un bot avanzado de Discord diseñado para proporcionar monitoreo automático, análisis de amenazas, funciones específicas por canal y reportes en tiempo real para la protección anti-cheat en la comunidad **Community Stealth**.
+- **🛡️ Anti-Cheat Avanzado**: Sistema de detección automática de métodos de trampa
+- **🔍 Análisis del Servidor**: Monitoreo continuo y reportes de amenazas
+- **🤖 IA Integrada**: Análisis inteligente con MiniMax AI
+- **📊 Reportes en Tiempo Real**: Notificaciones automáticas y alertas
+- **🗄️ Base de Datos**: Persistencia de datos con SQLite
+- **⚙️ Configuración Súper Simple**: Setup automático con un solo comando
 
-## ✨ **Nuevas Características v2.0**
+## 🚀 Instalación Rápida
 
-- 🧠 **5 Canales Específicos**: Support, Descubrimientos, Implementaciones, Chat, Cmd
-- 🔍 **Análisis Automático del Server**: Auto-detección de nuevos métodos anti-cheat
-- 🆕 **Sistema de Patrones**: Monitoreo inteligente de patrones en mensajes
-- 📋 **Auto-Updates**: Conexión al repositorio Stealth-AntiCheatX
-- ⚡ **Respuestas Inteligentes**: Respuestas automáticas contextual por canal
-
-## ⚡ **Funcionalidades Principales**
-
-### 🔍 **Monitoreo Automático**
-- Escaneos automáticos cada 5 minutos
-- Detección de amenazas en tiempo real
-- Análisis inteligente de patrones sospechosos
-
-### 📊 **Análisis de Amenazas**
-- Clasificación automática de amenazas
-- Nivel de riesgo: Seguro/Advertencia/Error
-- Historial completo de detecciones
-
-### 🚨 **Reportes en Tiempo Real**
-- Alertas instantáneas a través de webhook
-- Integración con Community Stealth
-- Notificaciones automáticas de actualizaciones
-
-### 🤖 **Comandos Anti-Cheat**
-- Comandos de escaneo bajo demanda
-- Información completa del sistema
-- Control de propietario avanzado
-
-### 📢 **Sistema de Canales Específicos**
-
-#### 🎯 **5 Canales con Funciones Dedicadas**
-
-El bot está configurado para operar en **5 canales específicos** con funciones únicas:
-
-#### 🛠️ **Canal Support** (`1442209840976887849`)
-- **Función**: Soporte técnico y resolución de problemas
-- **Respuestas Automáticas**: Detecta consultas de soporte
-- **Análisis**: Clasificación automática de problemas
-- **Palabras Clave**: problema, error, help, soporte, ayuda, bug, fallo
-
-#### 🔍 **Canal Descubrimientos** (`1442266383265038386`)
-- **Función**: Documentación de nuevos descubrimientos anti-cheat
-- **Análisis Automático**: Detecta código y patrones nuevos
-- **Monitoreo**: Escanea repositorio para nuevos métodos
-- **Detección**: Detecta código entre ``` y patrones de seguridad
-
-#### ⚙️ **Canal Implementaciones** (`1442268897406619798`)
-- **Función**: Seguimiento de implementaciones y mejoras
-- **Auto-Detección**: Identifica nuevas implementaciones
-- **Status Tracking**: Monitoreo de cambios en tiempo real
-- **Palabras Clave**: implement, deploy, update, código, commit, feature, mejora
-
-#### 💬 **Canal Chat** (`1442266154516091020`)
-- **Función**: Conversación general de la comunidad
-- **Asistencia Activation**: Detecta necesidades de ayuda automáticamente
-- **Smart Responses**: Respuestas contextuales inteligentes
-- **Palabras Clave**: ayuda, help, cómo, como, explica, ayudame, necesito
-
-#### ⚡ **Canal Cmd** (`1441888236833210389`)
-- **Función**: Ejecución de comandos del bot
-- **Lista Completa**: Muestra todos los comandos disponibles
-- **Categorización**: Organiza comandos por tipo y función
-- **Comandos**: Ayuda, información, escaneo, status, comunidad
-
-## 🎯 **Comandos Disponibles**
-
-### 📋 **Comandos Básicos**
-```
-$info       - Información completa del bot
-$help       - Lista de comandos disponibles
-$about      - Descripción detallada del proyecto
-$ping       - Verificar latencia del sistema
-$scan       - Escaneo manual del servidor
-$community  - Información de Community Stealth
-```
-
-### 👑 **Comandos de Propietario**
-```
-$owner      - Información del desarrollador
-$status     - Estado completo del sistema
-$servers    - Lista de servidores conectados
-$leave <ID> - Salir de un servidor específico
-```
-
-### ⚡ **Funciones Especiales**
-- **Responde a menciones**: `@Stealth-AntiCheatX`
-- **Auto-unión**: Bienvenida automática a nuevos servidores
-- **Integración webhook**: Reportes automáticos a Community Stealth
-- **Monitoreo continuo**: Protección 24/7
-
-## 🛠️ **Instalación**
-
-### **Requisitos Previos**
-- Node.js 18+ instalado
-- npm o yarn
-- Token del bot de Discord
-
-### **Instalación Paso a Paso**
-
-1. **Clonar/Descargar el proyecto**
+### Opción 1: Instalación Automática (RECOMENDADA)
 ```bash
-cd DiscordBot
-```
-
-2. **Instalar dependencias**
-```bash
+# Clonar e instalar automáticamente
+git clone https://github.com/xpe-hub/stealth-bot-nuevo.git
+cd stealth-bot-nuevo
 npm install
+node setup.js
+node start.sh
 ```
 
-3. **Configurar variables de entorno**
+### Opción 2: Instalación Manual
 ```bash
-# Editar archivo .env con tus tokens
-DISCORD_BOT_TOKEN=tu_token_aqui
+# Instalar dependencias
+npm install
+
+# Configurar el bot
+cp .env.template .env
+# Editar .env con tus credenciales
+
+# Ejecutar el bot
+node bot.js
+```
+
+## ⚙️ Configuración
+
+### 1. Variables de Entorno (.env)
+Copia `.env.template` a `.env` y configura:
+
+```env
+# Discord Bot
+DISCORD_BOT_TOKEN=tu_bot_token_aqui
 BOT_OWNER_ID=tu_user_id_aqui
-```
-
-4. **Iniciar el bot**
-```bash
-npm start
-```
-
-## 🔍 **Sistema de Análisis del Server**
-
-#### 🎯 **Características Avanzadas**
-- **Auto-Analysis**: Análisis automático cada 15 minutos
-- **Pattern Detection**: Detección inteligente de patrones en mensajes
-- **Method Discovery**: Descubrimiento de nuevos métodos anti-cheat
-- **Real-Time Monitoring**: Monitoreo en tiempo real del server
-- **Smart Alerts**: Alertas automáticas para patrones críticos
-
-#### 📊 **Análisis del Repositorio**
-- **Conexión**: Repositorio Stealth-AntiCheatX
-- **Monitoreo**: Commits cada 15 minutos
-- **Detección**: Palabras clave anti-cheat en mensajes de commit
-- **Notificación**: Envío automático al canal de Descubrimientos
-
-#### 🗨️ **Análisis de Mensajes**
-- **Escaneo**: Mensajes de los últimos 10 minutos
-- **Patrones**: anti-cheat, detectar, nuevo, bug, error
-- **Categorización**: anti-cheat-reference, detection-request, update-notice, issue-report
-- **Alertas**: Envío automático al canal de Support para patrones críticos
-
-#### ⚙️ **Configuración**
-```env
-SERVER_ANALYSIS_ENABLED=true
-SERVER_ANALYSIS_INTERVAL=15    # minutos
-REPO_TARGET_BRANCH=main
-SUPPORT_CHANNEL_ID=YOUR_SUPPORT_CHANNEL_ID
-DESCUBRIMIENTOS_CHANNEL_ID=YOUR_DESCUBRIMIENTOS_CHANNEL_ID
-IMPLEMENTACIONES_CHANNEL_ID=YOUR_IMPLEMENTACIONES_CHANNEL_ID
-CHAT_CHANNEL_ID=YOUR_CHAT_CHANNEL_ID
-CMD_CHANNEL_ID=YOUR_CMD_CHANNEL_ID
-```
-
-## 🔧 **Configuración**
-
-### **Archivo `.env`**
-```env
-# Token del bot de Discord
-DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
-
-# Token de GitHub para repositorio
-GITHUB_TOKEN=YOUR_GITHUB_TOKEN
-
-# ID del propietario del bot
-BOT_OWNER_ID=YOUR_DISCORD_USER_ID
-
-# Webhook para reportes anti-cheat
-ANTICHEAT_WEBHOOK_URL=YOUR_ANTICHEAT_WEBHOOK_URL
-
-# Configuraciones adicionales
 BOT_PREFIX=$
-COMMUNITY_STEALTH_URL=https://discord.gg/3sCxhWShvu
+
+# Canales del Servidor
+SUPPORT_CHANNEL_ID=tu_canal_support
+DESCUBRIMIENTOS_CHANNEL_ID=tu_canal_descubrimientos
+IMPLEMENTACIONES_CHANNEL_ID=tu_canal_implementaciones
+CHAT_CHANNEL_ID=tu_canal_chat
+CMD_CHANNEL_ID=tu_canal_comandos
+
+# Integración GitHub
+GITHUB_TOKEN=tu_github_token
+GITHUB_REPO_OWNER=xpe-hub
+GITHUB_REPO_NAME=stealth-bot-nuevo
+REPO_TARGET_BRANCH=main
+
+# Webhook para Alertas
+ANTICHEAT_WEBHOOK_URL=tu_webhook_url
+
+# MiniMax AI (Opcional)
+MINIMAX_API_KEY=tu_api_key_minimax
+
+# Configuración Avanzada
+SERVER_ANALYSIS_ENABLED=true
+SERVER_ANALYSIS_INTERVAL=15
+COMMUNITY_STEALTH_URL=https://discord.gg/tu-invita
 ```
 
-### **Configuración del Propietario**
+### 2. Permisos del Bot
+El bot necesita los siguientes permisos:
+- ✅ Enviar mensajes
+- ✅ Leer historial de mensajes
+- ✅ Usar botones de respuesta
+- ✅ Enviar archivos
+- ✅ Crear invitaciones (opcional)
 
-1. Obtén tu ID de Discord activando Modo Desarrollador
-2. Reemplaza `PUT_YOUR_USER_ID_HERE` en el archivo `.env`
-3. Guarda los cambios y reinicia el bot
-
-## 🛡️ **AntiCheatConsciousness**
-
-### **Sistema de Consciencia Anti-Cheat**
-
-El bot incluye un sistema avanzado de consciencia anti-cheat que:
-
-- ✅ **Monitorea automáticamente** procesos sospechosos (HD-Player.exe, MSI.exe, etc.)
-- ✅ **Analiza patrones** de comportamiento anómalo
-- ✅ **Detecta overlays** y ventanas transparentes
-- ✅ **Reporta amenazas** en tiempo real
-- ✅ **Actualiza base de datos** de amenazas automáticamente
-
-### **Niveles de Amenaza**
-
-- 🟢 **SEGURO**: No se detectaron amenazas
-- 🟡 **ADVERTENCIA**: Amenazas menores detectadas
-- 🔴 **ERROR**: Amenazas críticas o errores del sistema
-
-## 📊 **Base de Datos**
-
-El bot utiliza SQLite para almacenar:
-
-### **Tabla `server_stats`**
-- ID del servidor
-- Nombre del servidor
-- Conteo de miembros
-- Número de escaneos realizados
-- Último escaneo
-- Nivel de amenaza actual
-
-### **Tabla `bot_usage`**
-- ID del servidor
-- Comando utilizado
-- ID del usuario
-- Timestamp
-
-## 🌐 **Integración Community Stealth**
-
-### **Conexión Automática**
-- Auto-join a servidores con mensaje de bienvenida
-- Reportes automáticos al webhook de Community Stealth
-- Integración con repositorio GitHub (Stealth-AntiCheatX)
-
-### **Webhooks**
-- **URL de reportes**: Configurada automáticamente
-- **Formato**: Embeds profesionales con timestamps
-- **Frecuencia**: Instantánea para amenazas, 30min para actualizaciones
-
-## 📁 **Estructura de Archivos**
+## 📁 Estructura del Proyecto
 
 ```
-DiscordBot/
-├── bot.js              # Bot principal completo
-├── package.json        # Dependencias y configuración
-├── .env               # Variables de entorno
-├── README.md          # Esta documentación
-└── data/              # Base de datos SQLite
-    └── stealth.db     # Base de datos de estadísticas
+stealth-bot-nuevo/
+├── bot.js              # Archivo principal del bot
+├── package.json        # Configuración npm
+├── .env.template      # Plantilla de configuración
+├── setup.js           # Script de configuración interactiva
+├── start.sh           # Script de inicio automático
+├── install.sh         # Script de instalación
+├── database.db        # Base de datos SQLite (se crea automáticamente)
+├── backup.db          # Backup automático de la BD
+├── logs/              # Archivos de log
+├── README.md          # Este archivo
+└── docs/              # Documentación adicional
 ```
 
-## 🚨 **Características de Seguridad**
+## 🎮 Canales del Bot
 
-### **Protección de Datos**
-- Tokens de API almacenados en variables de entorno
-- Comandos de propietario protegidos
-- Base de datos SQLite local (sin datos sensibles)
+El bot maneja 5 canales específicos:
 
-### **Control de Acceso**
-- Verificación de propietario para comandos administrativos
-- Validación de permisos para operaciones sensibles
-- Logs detallados de todas las operaciones
+1. **💬 Support Channel** (`SUPPORT_CHANNEL_ID`)
+   - Comando: `!help`
+   - Función: Ayuda y soporte general
 
-### **Recuperación de Errores**
-- Manejo graceful de desconexiones
-- Reinicio automático en caso de errores
-- Logs detallados para troubleshooting
+2. **🔍 Descubrimientos** (`DESCUBRIMIENTOS_CHANNEL_ID`)
+   - Comando: `!nuevo [descripción]`
+   - Función: Registrar nuevos métodos anti-cheat
 
-## 🛠️ **Comandos de Desarrollo**
+3. **⚙️ Implementaciones** (`IMPLEMENTACIONES_CHANNEL_ID`)
+   - Comando: `!implementar [nombre] [descripción]`
+   - Función: Documentar implementaciones exitosas
 
-```bash
-# Iniciar en modo desarrollo
-npm run dev
+4. **💭 Chat General** (`CHAT_CHANNEL_ID`)
+   - Comando: `!analizar [mensaje]`
+   - Función: Análisis inteligente del contenido
 
-# Solo ejecutar (modo producción)
-npm start
+5. **⚡ Comandos** (`CMD_CHANNEL_ID`)
+   - Comando: `!comando [nombre] [descripción]`
+   - Función: Gestión de comandos personalizados
 
-# Ver logs
-tail -f logs/bot.log
-```
+## 🔧 Comandos Disponibles
 
-## 📞 **Soporte y Comunidad**
+### Comandos Básicos
+- `!help` - Mostrar ayuda
+- `!status` - Estado del bot
+- `!ping` - Verificar conectividad
+- `!info` - Información del servidor
 
-### **Comunidad Oficial**
-🌐 **[Community Stealth Discord](https://discord.gg/3sCxhWShvu)**
+### Comandos Anti-Cheat
+- `!nuevo [método]` - Reportar nuevo método anti-cheat
+- `!implementar [nombre] [descripción]` - Documentar implementación
+- `!analizar [contenido]` - Análisis con IA
 
-### **Desarrollador**
-👨‍💻 **xpe.nettt**
+### Comandos de Análisis
+- `!scan` - Escaneo completo del servidor
+- `!reporte` - Generar reporte de amenazas
+- `!historial` - Ver historial de detecciones
 
-### **Repositorio**
-📁 **[GitHub - Stealth-AntiCheatX](https://github.com/xpe-hub/Stealth-AntiCheatX)**
+## 📊 Base de Datos
 
-## 📝 **Logs del Sistema**
+El bot utiliza SQLite para persistencia de datos:
 
-El bot genera logs detallados para:
-- Conexión/desconexión de Discord
-- Escaneos de amenazas realizados
-- Comandos ejecutados
-- Errores del sistema
-- Operaciones de base de datos
+- **Tabla `anticheat_methods`**: Métodos anti-cheat detectados
+- **Tabla `implementations`**: Implementaciones documentadas
+- **Tabla `threats`**: Amenazas identificadas
+- **Tabla `server_analysis`**: Análisis del servidor
 
-**Ubicación**: Consola + archivo `logs/bot.log`
+## 🤖 Integración con MiniMax AI
 
-## 🔄 **Actualizaciones**
+El bot incluye análisis inteligente con MiniMax AI:
+- Detección automática de amenazas
+- Análisis de contenido sospechoso
+- Recomendaciones de seguridad
+- Respuestas inteligentes
 
-El sistema incluye verificación automática de:
-- Actualizaciones del repositorio GitHub
-- Nuevas versiones del bot
-- Cambios en configuraciones
+**Configurar MiniMax AI:**
+1. Obtén tu API key en [MiniMax](https://minimax.chat)
+2. Agrega `MINIMAX_API_KEY` al archivo `.env`
+3. El bot activará automáticamente la IA
 
-## ✅ **Estado del Sistema**
+## 🔐 Seguridad
 
-Para verificar el estado del bot:
-```bash
-# Comando interno
-$status
+- **✅ Tokens Seguros**: Todas las credenciales en variables de entorno
+- **✅ Backup Automático**: Base de datos respaldada cada hora
+- **✅ Logs Completos**: Registro detallado de todas las operaciones
+- **✅ Validación**: Validación de todas las entradas del usuario
 
-# Verificar AntiCheatConsciousness
-$info
+## 📈 Análisis y Reportes
 
-# Estado del monitoreo
-$owner
-```
+### Reportes Automáticos
+- **Cada 15 minutos**: Análisis de amenazas
+- **Cada hora**: Backup de base de datos
+- **Cada día**: Reporte de actividad
+- **Semanal**: Resumen de detecciones
+
+### Métricas Monitoreadas
+- Número de métodos anti-cheat detectados
+- Implementaciones documentadas
+- Amenazas eliminadas
+- Tiempo de respuesta promedio
+
+## 🆘 Soporte
+
+### Problemas Comunes
+1. **Bot no responde**: Verificar token y permisos
+2. **Error de base de datos**: Verificar permisos de escritura
+3. **Comandos no funcionan**: Verificar IDs de canales
+4. **IA no responde**: Verificar API key de MiniMax
+
+### Obtener Ayuda
+- **Discord**: [Community Stealth](https://discord.gg/3sCxhWShvu)
+- **Issues**: [GitHub Issues](https://github.com/xpe-hub/stealth-bot-nuevo/issues)
+- **Email**: xpepanels@gmail.com
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+
+## 👨‍💻 Desarrollo
+
+### Tecnologías Utilizadas
+- **Node.js** v18+
+- **Discord.js** v14
+- **SQLite3** para base de datos
+- **Axios** para APIs
+- **Node-cron** para tareas programadas
+
+### Contribución
+1. Fork el repositorio
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
+
+## 🔄 Historial de Versiones
+
+### v2.0.0 (2025-11-25)
+- ✅ Nuevo sistema anti-cheat avanzado
+- ✅ Integración completa con MiniMax AI
+- ✅ Base de datos SQLite optimizada
+- ✅ Instalación automática
+- ✅ Scripts de backup y recuperación
+- ✅ Análisis de servidor en tiempo real
+- ✅ 5 canales específicos configurables
+- ✅ Reportes automáticos
 
 ---
 
-## 📋 **Lista de Verificación Pre-Ejecución**
-
-- ✅ Node.js 18+ instalado
-- ✅ Dependencias instaladas (`npm install`)
-- ✅ Token del bot configurado en `.env`
-- ✅ Owner ID configurado en `.env`
-- ✅ Webhook URL configurado
-- ✅ Base de datos SQLite inicializada
-- ✅ Permisos del bot: Server Members, Messages, Intents
-
-**🚀 ¡El bot está listo para proteger Community Stealth!**
+**🎯 Desarrollado por: xpe.nettt**  
+**📧 Contacto: xpepanels@gmail.com**  
+**🌐 GitHub: https://github.com/xpe-hub/stealth-bot-nuevo**
 
 ---
 
-*© 2025 xpe.nettt - Community Stealth Anti-Cheat Protection System*
+### ⚡ Inicio Rápido
+
+```bash
+# 1. Clonar
+git clone https://github.com/xpe-hub/stealth-bot-nuevo.git
+cd stealth-bot-nuevo
+
+# 2. Configurar (automático)
+npm install && node setup.js
+
+# 3. Iniciar
+node start.sh
+```
+
+**¡Tu bot estará funcionando en menos de 2 minutos!** 🚀
