@@ -1,0 +1,35 @@
+{
+  "name": "stealth-bot-js",
+  "version": "2.0.0",
+  "description": "Bot Avanzado de Discord con IA MiniMax para Community Stealth",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js",
+    "test": "node test-basic.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "discord.js-light": "^6.2.9",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "sqlite3": "^5.1.7",
+    "node-cron": "^3.0.3",
+    "simple-git": "^3.24.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "keywords": [
+    "anti-cheat",
+    "discord",
+    "ai",
+    "minimax",
+    "community-stealth",
+    "auto-update",
+    "monitoring"
+  ],
+  "author": "xpe.nettt",
+  "license": "MIT"
+}
