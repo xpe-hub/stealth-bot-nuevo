@@ -1,0 +1,12 @@
+=== CHATMCP CONFIGURACIÓN EN PROGRESO ===
+
+2025-11-26 16:35:01 - ESTADO ACTUAL
+✅ ChatMCP descargado e instalado
+✅ App abierta correctamente  
+✅ Pantalla "Add Credentials" mostrada
+⏳ Seleccionando proveedor de IA
+🎯 Objetivo: Configurar MiniMax como Custom endpoint
+📱 Usuario: iPhone, sin PC
+⚡ Próximo paso: Tocar "Custom" y configurar MiniMax
+🔑 API Key lista para pegar
+🎉 Meta: MiniMax funcionando 100% en ChatMCP móvil
