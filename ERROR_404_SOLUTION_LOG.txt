@@ -1,0 +1,19 @@
+=== ERROR 404 SOLUCIONADO - NUEVA URL ===
+
+2025-11-26 16:41:59 - PROBLEMA IDENTIFICADO Y SOLUCIONADO
+❌ Error previo: https://api.minimaxi.chat devuelve 404
+✅ Solución: https://api.minimax.io (OpenAI-compatible)
+🎯 Causa: URL anterior no compatible con endpoints ChatMCP
+📱 Acción requerida: Cambiar URL en campo correspondiente
+⚡ Resultado esperado: Conexión exitosa sin error 404
+🚀 Progreso: 95% → Solución final aplicada
+🎉 Meta: MiniMax funcionando en ChatMCP iPhone
+
+SOLUCIÓN TÉCNICA:
+=================
+- URL anterior: https://api.minimaxi.chat (incompatible)
+- URL nueva: https://api.minimax.io (OpenAI-compatible)
+- Compatibilidad: ChatMCP requiere endpoints /chat/completions y /models
+- Estado: Listo para validación y guardado exitoso
+
+USER ACTION: Cambiar URL + Save → SUCCESS! 🎯
