@@ -20,7 +20,7 @@ ANTICHEAT_WEBHOOK_URL=https://discord.com/api/webhooks/1441660384443498578/cCBal
 ```
 
 ### 🔗 **GITHUB INTEGRATION** ✅
-- **GITHUB_TOKEN**: `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`
+- **GITHUB_TOKEN**: [CONFIGURADO EN RAILWAY]
 - **GITHUB_REPO**: xpe-hub/stealth-bot-nuevo
 - **REPO_BRANCH**: main
 
