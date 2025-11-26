@@ -4,18 +4,11 @@
   "description": "Bot avanzado de Discord con análisis anti-cheat y canales específicos",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
-    "axios": "^1.7.2",
-    "dotenv": "^16.4.5",
-    "sqlite3": "^5.1.7",
-    "node-cron": "^3.0.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.4"
+    "dotenv": "^16.4.5"
   },
   "keywords": [
     "anti-cheat",
