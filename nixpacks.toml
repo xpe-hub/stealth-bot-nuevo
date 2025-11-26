@@ -1,0 +1,8 @@
+[phases.install]
+cmd = "npm ci --only=production"
+
+[phases.build]  
+cmd = "echo 'Build phase - nothing to compile'"
+
+[start]
+cmd = "node bot.js"
