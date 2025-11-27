@@ -1,6 +1,7 @@
 // ========================================================
-// BOT ACTUALIZADO - FORZANDO REDEPLOY - 2025-11-27 16:03
+// BOT ACTUALIZADO - FORZANDO REDEPLOY - 2025-11-27 16:03:06
 // Corrección de comando $vc para unir bot a canales de voz
+// Railway deploy automático - Cambio forzado #2
 // ========================================================
 
 require('dotenv').config();
