@@ -581,7 +581,7 @@ con el verdadero StealthAntiCheatX.exe`;
                 const uptime = Math.floor(process.uptime() / 3600);
                 const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
                 const threatAnalysis = performThreatAnalysis();
-                const totalThreats = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
+                const totalThreatsAnalysis = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
                 
                 const statusEmbed = new EmbedBuilder()
                     .setTitle('📊 Estado del Bot')
@@ -593,7 +593,7 @@ con el verdadero StealthAntiCheatX.exe`;
                         { name: '💾 Memoria', value: `${memoryUsage} MB`, inline: true },
                         { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
                         { name: '👥 Usuarios', value: `${getTotalMemberCount(client)}`, inline: true },
-                        { name: '⚠️ Amenazas', value: `${totalThreats}`, inline: true }
+                        { name: '⚠️ Amenazas', value: `${totalThreatsAnalysis}`, inline: true }
                     )
                     .setFooter({ text: 'Community Stealth | xpe.nettt' })
                     .setTimestamp();
