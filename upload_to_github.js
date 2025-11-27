@@ -65,13 +65,19 @@ async function uploadFile(path, content) {
   
   // Crear o actualizar archivo
   const commitMessage = path === 'bot.js' 
-    ? `🤖 ACTUALIZACIÓN: Sistema de Permisos y Auto-Actualización\n\n` +
-      `✨ Nuevas características implementadas:\n` +
-      `• Detección automática de patrones de cheats\n` +
-      `• Consultas automáticas a desarrolladores\n` +
-      `• Sistema de permisos con comando 'dev approve'\n` +
-      `• Auto-actualización del repositorio cuando es aprobada\n` +
-      `• Monitoreo inteligente de threats y exploits\n\n` +
+    ? `🎤 ACTUALIZACIÓN: Sistema Inteligente de Canales de Voz\n\n` +
+      `✨ Comportamiento Inteligente Implementado:\n` +
+      `• Detección automática de canales de voz accesibles\n` +
+      `• Auto-unión cuando el usuario está en un canal\n` +
+      `• Opciones inteligentes: random, auto, most_active\n` +
+      `• Búsqueda inteligente por nombre de canal\n` +
+      `• Sistema de permisos verificado antes de conectarse\n` +
+      `• Códigos duplicados eliminados y lógica optimizada\n\n` +
+      `🤖 Comandos de voz mejorados:\n` +
+      `• \\$vc - Escaneo automático de canales\n` +
+      `• \\$vc random - Unirse a canal aleatorio\n` +
+      `• \\$vc auto - Canal automático más activo\n` +
+      `• \\$vc [nombre] - Canal específico\n\n` +
       `🔧 Desarrollado por: xpe.nettt\n` +
       `📅 Fecha: ${new Date().toLocaleString()}\n` +
       `🏠 Community Stealth`
