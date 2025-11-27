@@ -121,7 +121,7 @@ client.once('ready', () => {
     client.user.setPresence({
         status: 'online',
         activities: [{ 
-            name: '🛡️ AntiCheat Community Stealth', 
+            name: 'Stealth-AntiCheatX APP', 
             type: 3 // WATCHING
         }]
     });
@@ -146,8 +146,8 @@ client.on('messageCreate', async (message) => {
         const totalMembers = getTotalMemberCount(client);
         
         const embed = new EmbedBuilder()
-            .setTitle('🤖 ¡Stealth-AntiCheat está aquí!')
-            .setDescription(`¡Hola ${userNickname}! Soy el **bot de monitoreo y análisis anti-cheat** desarrollado por xpe.nettt`)
+            .setTitle('🤖 ¡Stealth-AntiCheatX está aquí!')
+            .setDescription(`¡Hola ${userNickname}! Soy **Stealth-AntiCheatX APP** - bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt`)
             .setColor('#0099ff')
             .addFields(
                 { name: '📋 Comandos', value: `\`${BOT_PREFIX}help\` - Lista de comandos\n\`${BOT_PREFIX}ping\` - Verificar estado\n\`${BOT_PREFIX}scan\` - para escanear el servidor`, inline: true },
@@ -436,7 +436,7 @@ client.on('messageCreate', async (message) => {
                 break;
                 
             case 'anticheat':
-                // Comando para descargar herramienta anti-cheat
+                // Comando para descargar herramienta anti-cheat (SOLO xpe.nettt)
                 if (!isOwner(message.author.id)) {
                     const noAuthEmbed = new EmbedBuilder()
                         .setTitle('❌ Acceso Denegado')
@@ -448,15 +448,19 @@ client.on('messageCreate', async (message) => {
                 }
                 
                 const anticheatEmbed = new EmbedBuilder()
-                    .setTitle('🛡️ ¡Aquí estoy! Puedes descargarme ;)')
-                    .setDescription('¡Descárgame y destroza ss ;)\n\n**Stealth-AntiCheatX Anti-Cheat v1**\nAnti-cheat avanzado para torneos y ss')
+                    .setTitle('🎯 ¡Stealth-AntiCheatX Anti-Cheat!')
+                    .setDescription('🎯 **¡Aquí estoy! Puedes descargarte ;)**\n\n💎 **Stealth-AntiCheatX Anti-Cheat**')
                     .setColor('#00ff00')
                     .addFields(
+                        { name: '🔧 Versión:', value: 'v1', inline: true },
+                        { name: '🔒 Anti-cheat avanzado', value: 'para torneos y ss', inline: true },
+                        { name: '📥 ¡Descárgame y', value: 'destroza ss ;)', inline: true },
                         { name: '📁 Archivo', value: 'StealthAntiCheatX.exe', inline: true },
-                        { name: '💾 Tamaño', value: '1.01MB', inline: true },
-                        { name: '⚙️ Compatibilidad', value: 'HD Player / MSI', inline: true },
-                        { name: '👨‍💻 Desarrollador', value: 'xpe.nettt', inline: true },
-                        { name: '⚠️ Importante', value: 'Solo personal autorizado - prohibida su venta', inline: false }
+                        { name: '📏 Tamaño', value: '1.01MB', inline: true },
+                        { name: '🔧 Versión', value: 'v1', inline: true },
+                        { name: '🎮 Compatibilidad', value: 'HD Player / MSI', inline: true },
+                        { name: '🏡 Desarrollado por', value: 'xpe.nettt', inline: true },
+                        { name: '📣 Importante', value: 'Solo personal autorizado - prohibida su venta', inline: false }
                     )
                     .setFooter({ text: 'Community Stealth' })
                     .setTimestamp();
@@ -468,8 +472,8 @@ Compatibilidad: HD Player / MSI
 Tamaño: 1.01MB
 Fecha: ${new Date().toLocaleDateString()}
 
-NOTA: Este es un archivo de placeholder.
-Para usar el comando $anticheat real, reemplaza este archivo
+Este es un archivo placeholder.
+Para usar el verdadero comando $anticheat, reemplaza este archivo
 con el verdadero StealthAntiCheatX.exe`;
 
                 try {
