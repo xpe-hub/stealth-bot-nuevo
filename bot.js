@@ -298,6 +298,35 @@ class StealthAntiCheatInfiltrationSystem {
                 await cmdChannel.send({ embeds: [cmdEmbed] });
             }
 
+            // NOTIFICACIÓN AUTOMÁTICA A DESARROLLADORES - SISTEMA 100% AUTOMÁTICO
+            const implChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
+            if (implChannel) {
+                const devEmbed = new EmbedBuilder()
+                    .setTitle('💬 CONSULTA AUTOMÁTICA A DESARROLLADORES')
+                    .setDescription('🚀 **NUEVO MÉTODO DETECTADO - REQUIERE IMPLEMENTACIÓN**')
+                    .addFields(
+                        { name: '🕵️ Método Encontrado', value: `**Fuente**: ${method.sourceGuild}\\n**Canal**: ${method.sourceChannel}\\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}`, inline: false },
+                        { name: '💬 Contenido Detectado', value: method.content.substring(0, 200) + (method.content.length > 200 ? '...' : ''), inline: false }
+                    )
+                    .addFields(
+                        { name: '💉 Métodos de Inyección', value: method.findings.injectionMethods.length > 0 ? method.findings.injectionMethods.join('\\n') : 'Ninguno detectado', inline: true },
+                        { name: '🦠 Patrones Malware', value: method.findings.malwarePatterns.length > 0 ? method.findings.malwarePatterns.join('\\n') : 'Ninguno detectado', inline: true },
+                        { name: '🎮 Códigos de Cheat', value: method.findings.cheatCodes.length > 0 ? method.findings.cheatCodes.join('\\n') : 'Ninguno detectado', inline: true }
+                    )
+                    .addFields(
+                        { name: '❓ PREGUNTA PARA DESARROLLADORES', value: '**¿Pueden implementar la detección de este método en Stealth-AntiCheatX?**\\n**¿Pueden compilar el EXE actualizado y enviarlo?**', inline: false },
+                        { name: '🚀 ACCIÓN REQUERIDA', value: '⚡ Actualizar anti-cheat con nuevos patrones detectados\\n📤 Compilar nueva versión del EXE\\n🎯 No dejar escapar ningún xiter malo', inline: false }
+                    )
+                    .setColor('#ff6b35')
+                    .setFooter({ text: '🚨 SISTEMA AUTOMÁTICO ACTIVO 🚨 - Desarrolladores respondan para implementación' });
+
+                await implChannel.send({ embeds: [devEmbed] });
+                
+                // Marcar automáticamente como consultado
+                method.status = 'CONSULTED';
+                this.saveInfiltrationData();
+            }
+
         } catch (error) {
             console.error('Error reportando método:', error);
         }
@@ -1508,77 +1537,7 @@ client.on('messageCreate', async (message) => {
                         }
                         break;
 
-                    case 'consult':
-                        const consultMethod = args[1];
-                        
-                        if (consultMethod === 'methods') {
-                            if (stealthSystem.discoveredMethods.length === 0) {
-                                await message.reply('📝 **No hay métodos de inyección descubiertos aún**');
-                                return;
-                            }
 
-                            // Obtener métodos pendientes de análisis
-                            const pendingMethods = stealthSystem.discoveredMethods.filter(m => m.status === 'PENDING_ANALYSIS');
-                            
-                            if (pendingMethods.length === 0) {
-                                await message.reply('✅ **Todos los métodos descubiertos ya han sido analizados**');
-                                return;
-                            }
-
-                            // Consultar sobre el método más reciente
-                            const latestMethod = pendingMethods[pendingMethods.length - 1];
-                            
-                            const consultEmbed = new EmbedBuilder()
-                                .setTitle('💬 CONSULTA A DESARROLLADORES')
-                                .setDescription(`Consulta sobre nuevo método de inyección descubierto`)
-                                .addFields(
-                                    { name: '🕵️ Método Encontrado', value: `**Fuente**: ${latestMethod.sourceGuild}\n**Canal**: ${latestMethod.sourceChannel}\n**Timestamp**: ${new Date(latestMethod.timestamp).toLocaleString()}`, inline: false },
-                                    { name: '💬 Contenido Detectado', value: latestMethod.content.substring(0, 200) + (latestMethod.content.length > 200 ? '...' : ''), inline: false }
-                                )
-                                .addFields(
-                                    { name: '💉 Métodos de Inyección', value: latestMethod.findings.injectionMethods.length > 0 ? latestMethod.findings.injectionMethods.join('\n') : 'Ninguno detectado', inline: true },
-                                    { name: '🦠 Patrones Malware', value: latestMethod.findings.malwarePatterns.length > 0 ? latestMethod.findings.malwarePatterns.join('\n') : 'Ninguno detectado', inline: true },
-                                    { name: '🎮 Códigos de Cheat', value: latestMethod.findings.cheatCodes.length > 0 ? latestMethod.findings.cheatCodes.join('\n') : 'Ninguno detectado', inline: true }
-                                )
-                                .addFields(
-                                    { name: '❓ Pregunta para Desarrolladores', value: `¿Pueden implementar la detección de este método en Stealth-AntiCheatX?\n¿Necesitan que actualice el repositorio con estos hallazgos?`, inline: false },
-                                    { name: '🚀 Acción Sugerida', value: 'Compilar nueva versión del anti-cheat con los patrones detectados', inline: true }
-                                )
-                                .setColor('#ff6b35')
-                                .setFooter({ text: 'Sistema de consulta activa - Desarrolladores pueden responder' });
-
-                            await message.reply({ embeds: [consultEmbed] });
-                            
-                            // Marcar método como consultado
-                            latestMethod.status = 'CONSULTED';
-                            stealthSystem.saveInfiltrationData();
-                            
-                        } else if (consultMethod === 'repo') {
-                            await message.reply('🔄 **Preparando actualización del repositorio...**');
-                            
-                            const updateResult = await stealthSystem.updateAntiCheatRepository();
-                            if (updateResult?.success) {
-                                await message.reply(`✅ **Repositorio actualizado con ${updateResult.patterns} nuevos patrones**`);
-                                await message.reply('📤 **¿Pueden compilar el EXE actualizado y enviarlo?**');
-                            } else {
-                                await message.reply('❌ **Error preparando actualización del repositorio**');
-                            }
-                            
-                        } else {
-                            const consultHelpEmbed = new EmbedBuilder()
-                                .setTitle('💬 Comandos de Consulta')
-                                .setDescription('Consulte a los desarrolladores sobre los hallazgos de infiltración')
-                                .addFields(
-                                    { name: '📋 Consultar Métodos', value: `\`${BOT_PREFIX}dev consult methods\` - Preguntar sobre métodos encontrados`, inline: true },
-                                    { name: '📤 Actualizar Repositorio', value: `\`${BOT_PREFIX}dev consult repo\` - Preparar actualización del anti-cheat`, inline: true }
-                                )
-                                .addFields(
-                                    { name: '💡 Uso Recomendado', value: 'Use estos comandos después de infiltrar servidores y encontrar métodos de inyección nuevos', inline: false }
-                                )
-                                .setColor('#ff6b35');
-                            await message.reply({ embeds: [consultHelpEmbed] });
-                        }
-                        break;
 
                     case 'analyze':
                         const codeToAnalyze = args.slice(1).join(' ');
@@ -1683,7 +1642,7 @@ client.on('messageCreate', async (message) => {
                                 { name: '🧪 Test de Detección', value: `\`${BOT_PREFIX}dev test\``, inline: true },
                                 { name: '⚙️ Modo Desarrollador', value: `\`${BOT_PREFIX}dev mode [on|off]\``, inline: true },
                                 { name: '🚀 Mover Bot', value: `\`${BOT_PREFIX}dev move [nombre_canal]\``, inline: true },
-                                { name: '💬 Consultar Desarrolladores', value: `\`${BOT_PREFIX}dev consult [methods|repo]\``, inline: true }
+
                             )
                             .setColor('#0066cc')
                             .setFooter({ text: 'Solo disponible para desarrolladores autorizados de Stealth-AntiCheatX + Infiltración' });
@@ -1701,7 +1660,7 @@ client.on('messageCreate', async (message) => {
                                 { name: '🕵️ Infiltración', value: `\`${BOT_PREFIX}dev infiltration on/off\``, inline: true },
                                 { name: '⚙️ Control', value: `\`${BOT_PREFIX}dev mode on/off\` - Activar/desactivar modo dev`, inline: true },
                                 { name: '🚀 Mover Bot', value: `\`${BOT_PREFIX}dev move [canal]\` - Cambiar canal actual`, inline: true },
-                                { name: '💬 Consultar Devs', value: `\`${BOT_PREFIX}dev consult methods\` - Preguntar sobre hallazgos`, inline: true }
+
                             )
                             .setColor('#00ff00')
                             .setFooter({ text: `Desarrollador Stealth + Infiltración: ${message.author.username}` });
