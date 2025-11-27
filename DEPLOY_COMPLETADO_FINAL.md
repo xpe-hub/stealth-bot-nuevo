@@ -1,6 +1,6 @@
 # 🤖 Bot Stealth-AntiCheat - Despliegue Completo
 
-**Commit:** 66d12eb  
+**Commit:** 58e5ba0  
 **Estado:** ✅ Desplegado exitosamente a GitHub  
 **Repositorio:** https://github.com/xpe-hub/stealth-bot-nuevo  
 **Rama:** main  
@@ -14,6 +14,7 @@
 - `$info` - Información de servidores y usuarios
 - `$scan` - Escaneo del servidor con análisis de amenazas
 - `$community` - Información de Community Stealth
+- `$vc [canal]` - Unirse a canal de voz específico
 
 ### 👷 Comandos de Desarrollador
 - `$owner` - Información de permisos y roles
@@ -59,6 +60,12 @@
 - Personalización con apodos
 - Información contextual del servidor
 
+### ✅ Funcionalidades de Voz
+- Unirse a canales de voz por nombre
+- Búsqueda inteligente de canales
+- Desconexión automática de canales anteriores
+- Información detallada de usuarios conectados
+
 ## 🎯 Para Probar Después del Redeploy
 
 1. **Comando básico:**
@@ -81,6 +88,11 @@
    $info
    ```
 
+6. **Unirse a canal de voz:**
+   ```
+   $vc General
+   ```
+
 5. **Comando propietario:**
    ```
    $anticheat
@@ -97,7 +109,7 @@
 
 - **Usuarios totales:** 311 (corregido)
 - **Servidores:** 1
-- **Comandos disponibles:** 15+
+- **Comandos disponibles:** 16+
 - **Tiempo de respuesta:** <100ms
 - **Estado:** Online ✅
 

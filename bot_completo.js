@@ -10,7 +10,8 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildVoiceStates
     ]
 });
 
@@ -175,7 +176,7 @@ client.on('messageCreate', async (message) => {
                     .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
                     .setColor('#00ff00')
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad`, inline: true },
+                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz`, inline: true },
                         { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
                         { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
                         { name: '🔍 Anti-Cheat', value: `\`${BOT_PREFIX}anticheat\` - Descargar herramienta`, inline: true },
@@ -251,6 +252,120 @@ client.on('messageCreate', async (message) => {
                     .setTimestamp();
                 
                 await message.reply({ embeds: [communityEmbed] });
+                break;
+                
+            case 'vc':
+            case 'voice':
+            case 'canal':
+                if (!message.guild) {
+                    return message.reply('❌ Este comando solo funciona en servidores.');
+                }
+                
+                if (args.length === 0) {
+                    // Mostrar estado de voz actual
+                    if (message.member.voice.channel) {
+                        const voiceEmbed = new EmbedBuilder()
+                            .setTitle('🎤 Canal de Voz Actual')
+                            .setDescription(`Estás conectado en: **${message.member.voice.channel.name}**`)
+                            .setColor('#00ff00')
+                            .addFields(
+                                { name: '🔗 Canal ID', value: message.member.voice.channel.id, inline: true },
+                                { name: '👥 Usuarios', value: `${message.member.voice.channel.members.size}`, inline: true }
+                            )
+                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [voiceEmbed] });
+                    } else {
+                        const voiceEmbed = new EmbedBuilder()
+                            .setTitle('🎤 Canales de Voz Disponibles')
+                            .setDescription('Canales de voz disponibles en este servidor:')
+                            .setColor('#ff9900')
+                            .addFields(
+                                { name: '📋 Lista de Canales', value: guild.voiceChannels.map(channel => channel.name).slice(0, 10).join('\n') || 'No hay canales de voz disponibles', inline: false },
+                                { name: '💡 Uso', value: `\`${BOT_PREFIX}vc [nombre del canal]\``, inline: false }
+                            )
+                            .setFooter({ text: 'Community Stealth | xpe.nettt' })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [voiceEmbed] });
+                    }
+                } else {
+                    // Unirse al canal especificado
+                    const channelName = args.join(' ');
+                    const guild = message.guild;
+                    
+                    // Buscar canal de voz por nombre
+                    const voiceChannel = guild.channels.cache.find(channel => 
+                        channel.type === 2 && // GUILD_VOICE
+                        channel.name.toLowerCase().includes(channelName.toLowerCase())
+                    );
+                    
+                    if (!voiceChannel) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setTitle('❌ Canal No Encontrado')
+                            .setDescription(`No se encontró un canal de voz con el nombre "${channelName}"`)
+                            .setColor('#ff0000')
+                            .addFields(
+                                { name: '🔍 Búsqueda', value: `Canales disponibles: ${guild.voiceChannels.map(ch => ch.name).slice(0, 5).join(', ')}...`, inline: false },
+                                { name: '💡 Sugerencia', value: 'Usa un nombre más específico o verifica el nombre exacto del canal.', inline: false }
+                            )
+                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre exacto del canal]` })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [errorEmbed] });
+                        return;
+                    }
+                    
+                    if (!message.member.voice) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setTitle('❌ No Estás en un Canal de Voz')
+                            .setDescription('Necesitas estar conectado a un canal de voz para usar este comando.')
+                            .setColor('#ff0000')
+                            .setFooter({ text: 'Únete a un canal de voz primero' })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [errorEmbed] });
+                        return;
+                    }
+                    
+                    try {
+                        // Desconectar del canal actual si está conectado
+                        if (message.guild.members.me.voice.channel) {
+                            await message.guild.members.me.voice.disconnect();
+                        }
+                        
+                        // Conectar al nuevo canal
+                        await message.guild.members.me.voice.setChannel(voiceChannel.id);
+                        
+                        const successEmbed = new EmbedBuilder()
+                            .setTitle('✅ Conectado al Canal de Voz')
+                            .setDescription(`El bot se ha unido al canal **${voiceChannel.name}**`)
+                            .setColor('#00ff00')
+                            .addFields(
+                                { name: '🎤 Canal', value: voiceChannel.name, inline: true },
+                                { name: '👥 Usuarios Conectados', value: `${voiceChannel.members.size}`, inline: true },
+                                { name: '🔗 ID del Canal', value: voiceChannel.id, inline: true }
+                            )
+                            .setFooter({ text: 'Community Stealth | xpe.nettt' })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [successEmbed] });
+                    } catch (error) {
+                        console.error('Error connecting to voice channel:', error);
+                        
+                        const errorEmbed = new EmbedBuilder()
+                            .setTitle('❌ Error de Conexión')
+                            .setDescription('No se pudo conectar al canal de voz.')
+                            .setColor('#ff0000')
+                            .addFields(
+                                { name: '🔧 Error', value: error.message, inline: false }
+                            )
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [errorEmbed] });
+                    }
+                }
                 break;
                 
             case 'info':
