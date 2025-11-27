@@ -65,20 +65,21 @@ async function uploadFile(path, content) {
   
   // Crear o actualizar archivo
   const commitMessage = path === 'bot.js' 
-    ? `🎤 CORRECCIÓN CRÍTICA: Sistema de Voz Funcional\n\n` +
-      `🚨 PROBLEMA RESUELTO: Bot no se unía a canales de voz\n\n` +
+    ? `🎤 SIMPLIFICACIÓN: Comandos de Voz Simplificados\n\n` +
+      `🔧 OBJETIVO: Bot específico con funciones claras\n\n` +
       `✅ Cambios implementados:\n` +
-      `• CORRECCIÓN: Bot se une A SÍ MISMO (no mueve usuarios)\n` +
-      `• ELIMINADO: Opción 'most_active' (solicitado por usuario)\n` +
-      `• MEJORADO: Auto-detección cuando usuario está en canal\n` +
-      `• SIMPLIFICADO: Lógica de conexión directa y funcional\n` +
-      `• ROBUSTO: Verificaciones de permisos mejoradas\n` +
-      `• LIMPIO: Códigos duplicados eliminados completamente\n\n` +
-      `🎯 Comandos de voz ahora funcionales:\n` +
-      `• \\$vc - Lista canales disponibles\n` +
-      `• \\$vc random - Se une a canal aleatorio\n` +
-      `• \\$vc auto - Se une automáticamente al más inteligente\n` +
-      `• \\$vc [nombre] - Se une a canal específico\n\n` +
+      `• SIMPLIFICADO: Solo 2 comandos esenciales\n` +
+      `• \\$vc - Unión automática si usuario está en canal\n` +
+      `• \\$vc random - Canal aleatorio con personas\n` +
+      `• ELIMINADO: Opciones complejas (auto, most_active, por nombre)\n` +
+      `• LIMPIADO: Código de ~800 líneas a ~150 líneas\n` +
+      `• OPTIMIZADO: Enfoque en funcionalidades específicas\n` +
+      `• PREPARADO: Para implementación de IA con MiniMax API\n\n` +
+      `🎯 Filosofía del bot:\n` +
+      `• Bot específico con misiones específicas\n` +
+      `• Sin funciones innecesarias\n` +
+      `• Preparado para automatización con IA\n` +
+      `• Focus en completar implementaciones actuales\n\n` +
       `🔧 Desarrollado por: xpe.nettt\n` +
       `📅 Fecha: ${new Date().toLocaleString()}\n` +
       `🏠 Community Stealth`
