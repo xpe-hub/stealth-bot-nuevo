@@ -391,8 +391,8 @@ client.on('messageCreate', async (message) => {
                 
             case 'scan':
                 // Simulación de escaneo del servidor
-                const threats = performThreatAnalysis();
-                const totalThreats = threats.reduce((sum, threat) => sum + threat.count, 0);
+                const scanThreats = performThreatAnalysis();
+                const totalScanThreats = scanThreats.reduce((sum, threat) => sum + threat.count, 0);
                 
                 const scanEmbed = new EmbedBuilder()
                     .setTitle('🔍 Escaneando Servidor...')
@@ -400,9 +400,9 @@ client.on('messageCreate', async (message) => {
                     .setColor('#ffaa00')
                     .addFields(
                         { name: '👥 Miembros Escaneados', value: `${getCurrentGuildMemberCount(client)}`, inline: true },
-                        { name: '⚠️ Amenazas Detectadas', value: `${totalThreats}`, inline: true },
-                        { name: '🛡️ Nivel de Seguridad', value: totalThreats === 0 ? 'Alto' : totalThreats < 3 ? 'Medio' : 'Bajo', inline: true },
-                        { name: '📊 Análisis', value: threats.map(t => `• ${t.type}: ${t.count} (${t.severity})`).join('\n') || '✅ Sin problemas detectados', inline: false }
+                        { name: '⚠️ Amenazas Detectadas', value: `${totalScanThreats}`, inline: true },
+                        { name: '🛡️ Nivel de Seguridad', value: totalScanThreats === 0 ? 'Alto' : totalScanThreats < 3 ? 'Medio' : 'Bajo', inline: true },
+                        { name: '📊 Análisis', value: scanThreats.map(t => `• ${t.type}: ${t.count} (${t.severity})`).join('\n') || '✅ Sin problemas detectados', inline: false }
                     )
                     .setFooter({ text: `¡Hola ${userNickname}!` })
                     .setTimestamp();
