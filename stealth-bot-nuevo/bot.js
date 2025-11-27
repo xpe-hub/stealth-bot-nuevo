@@ -298,17 +298,17 @@ class StealthAntiCheatInfiltrationSystem {
                 await cmdChannel.send({ embeds: [cmdEmbed] });
             }
 
-            // NOTIFICACIÓN Y AUTO-ACTUALIZACIÓN AUTOMÁTICA DEL BOT
+            // CONSULTA AUTOMÁTICA A DESARROLLADORES CON PERMISOS
             const implChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
             if (implChannel) {
-                // AUTO-ACTUALIZAR REPOSITORIO DEL BOT
-                const autoUpdateResult = await this.updateAntiCheatRepository();
+                // Etiquetas automáticas para desarrolladores
+                const developerMentions = `<@${BOT_OWNER_ID}>`; // Etiqueta al owner/principal dev
                 
                 const devEmbed = new EmbedBuilder()
                     .setTitle('💬 CONSULTA AUTOMÁTICA A DESARROLLADORES')
-                    .setDescription('🚀 **NUEVO MÉTODO DETECTADO - REQUIERE IMPLEMENTACIÓN**')
+                    .setDescription(`**CHEAT DETECTADO - ESPERANDO PERMISO** ${developerMentions}`)
                     .addFields(
-                        { name: '🕵️ Método Encontrado', value: `**Fuente**: ${method.sourceGuild}\\n**Canal**: ${method.sourceChannel}\\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}`, inline: false },
+                        { name: '🕵️ Hallazgo Detectado', value: `**Fuente**: ${method.sourceGuild}\\n**Canal**: ${method.sourceChannel}\\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}`, inline: false },
                         { name: '💬 Contenido Detectado', value: method.content.substring(0, 200) + (method.content.length > 200 ? '...' : ''), inline: false }
                     )
                     .addFields(
@@ -317,20 +317,17 @@ class StealthAntiCheatInfiltrationSystem {
                         { name: '🎮 Códigos de Cheat', value: method.findings.cheatCodes.length > 0 ? method.findings.cheatCodes.join('\\n') : 'Ninguno detectado', inline: true }
                     )
                     .addFields(
-                        { name: '🤖 DECISIÓN DEL BOT', value: autoUpdateResult?.success ? 
-                            '✅ **SÍ** - Implementaré la detección en mi código\\n✅ **SÍ** - Actualizaré mi repositorio automáticamente' : 
-                            '❌ **NO** - Error en auto-actualización del repositorio', inline: false },
-                        { name: '🚀 ACCIONES COMPLETADAS', value: autoUpdateResult?.success ? 
-                            `⚡ ✅ Detectores actualizados (${autoUpdateResult.patterns} patrones)\\n📤 ✅ Repositorio actualizado en GitHub\\n🔄 🚨 **NECESITO COMPILAR EXE ACTUALIZADO**` : 
-                            '❌ Error en auto-actualización\\n🚨 Requiere intervención manual', inline: false }
+                        { name: '🤖 PREGUNTA DEL BOT', value: '**¿Puedo implementar la detección de este cheat en Stealth-AntiCheatX?**\\n**¿Pueden compilar el EXE actualizado y enviarlo?**', inline: false },
+                        { name: '⏳ ESPERANDO RESPUESTA', value: '🤖 El bot NO se auto-actualizará sin permiso\\n📊 Continuará recopilando más información hasta recibir autorización', inline: false },
+                        { name: '🔄 OPCIONES', value: '✅ **Permitir** → Bot se auto-actualiza\\n❌ **Denegar** → Bot recopila más cheats', inline: true }
                     )
-                    .setColor(autoUpdateResult?.success ? '#00ff00' : '#ff0000')
-                    .setFooter({ text: autoUpdateResult?.success ? '🤖 BOT AUTO-ACTUALIZADO ✅' : '🤖 ERROR EN AUTO-ACTUALIZACIÓN ❌' });
+                    .setColor('#ff6b35')
+                    .setFooter({ text: '🤖 ESPERANDO AUTORIZACIÓN DE DESARROLLADORES 🤖' });
 
                 await implChannel.send({ embeds: [devEmbed] });
                 
-                // Marcar automáticamente como auto-consultado
-                method.status = 'AUTO_CONSULTED';
+                // Marcar automáticamente como pendiente de autorización
+                method.status = 'AWAITING_PERMISSION';
                 this.saveInfiltrationData();
             }
 
@@ -1582,6 +1579,125 @@ client.on('messageCreate', async (message) => {
                         }
                         break;
 
+                    case 'approve':
+                        const action = args[1]; // 'approve' o 'deny'
+                        const methodId = args[2]; // ID o índice del método
+                        
+                        if (!action || !methodId) {
+                            await message.reply('❌ **Error**: Uso correcto `dev approve [approve|deny] [id]`');
+                            return;
+                        }
+                        
+                        // Buscar método pendiente de autorización
+                        const pendingMethods = stealthSystem.discoveredMethods.filter(m => m.status === 'AWAITING_PERMISSION');
+                        
+                        if (pendingMethods.length === 0) {
+                            await message.reply('❌ **No hay métodos pendientes de autorización**');
+                            return;
+                        }
+                        
+                        let targetMethod = null;
+                        if (!isNaN(methodId)) {
+                            const index = parseInt(methodId) - 1;
+                            targetMethod = pendingMethods[index] || null;
+                        } else {
+                            // Buscar por ID o contenido
+                            targetMethod = pendingMethods.find(m => 
+                                m.sourceGuild.toLowerCase().includes(methodId.toLowerCase()) ||
+                                m.content.toLowerCase().includes(methodId.toLowerCase())
+                            );
+                        }
+                        
+                        if (!targetMethod) {
+                            await message.reply('❌ **Método no encontrado**');
+                            return;
+                        }
+                        
+                        if (action === 'approve' || action === 'yes') {
+                            // APROBAR - Auto-actualizar bot
+                            const updateResult = await stealthSystem.updateAntiCheatRepository();
+                            
+                            if (updateResult?.success) {
+                                targetMethod.status = 'APPROVED';
+                                stealthSystem.saveInfiltrationData();
+                                
+                                await message.reply(`✅ **APROBADO** - Bot auto-actualizado\n📤 Repositorio actualizado: ${updateResult.patterns} patrones\n🔄 **NECESITA COMPILACIÓN DEL EXE**`);
+                                
+                                // Notificar en canal de implementaciones
+                                const implChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
+                                if (implChannel) {
+                                    const approveEmbed = new EmbedBuilder()
+                                        .setTitle('✅ AUTORIZACIÓN CONCEDIDA')
+                                        .setDescription(`**Método aprobado por desarrollador**\n🔄 **AUTO-ACTUALIZANDO BOT...**`)
+                                        .addFields(
+                                            { name: '🎯 Fuente', value: `${targetMethod.sourceGuild}`, inline: true },
+                                            { name: '📦 Patrones', value: updateResult.patterns.toString(), inline: true },
+                                            { name: '⏰ Timestamp', value: new Date().toLocaleString(), inline: true }
+                                        )
+                                        .setColor('#00ff00')
+                                        .setFooter({ text: '🤖 BOT AUTORIZADO PARA ACTUALIZACIÓN ✅' });
+                                        
+                                    await implChannel.send({ embeds: [approveEmbed] });
+                                }
+                            } else {
+                                await message.reply('❌ **Error en auto-actualización del bot**');
+                            }
+                        } else if (action === 'deny' || action === 'no') {
+                            // DENEGAR - Seguir recopilando
+                            targetMethod.status = 'DENIED';
+                            stealthSystem.saveInfiltrationData();
+                            
+                            await message.reply('❌ **DENEGADO** - Bot continuará recopilando más información\n📊 Esperará nuevos hallazgos para futura autorización');
+                            
+                            // Notificar denegación
+                            const implChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
+                            if (implChannel) {
+                                const denyEmbed = new EmbedBuilder()
+                                    .setTitle('❌ AUTORIZACIÓN DENEGADA')
+                                    .setDescription(`**Método denegado por desarrollador**\n📊 **CONTINUANDO RECOPILACIÓN...**`)
+                                    .addFields(
+                                        { name: '🎯 Fuente', value: `${targetMethod.sourceGuild}`, inline: true },
+                                        { name: '⏳ Estado', value: 'Recopilando más información', inline: true },
+                                        { name: '🔄 Próximo', value: 'Esperar nuevos hallazgos', inline: true }
+                                    )
+                                    .setColor('#ff6600')
+                                    .setFooter({ text: '📊 BOT ESPERANDO MÁS INFORMACIÓN' });
+                                    
+                                await implChannel.send({ embeds: [denyEmbed] });
+                            }
+                        } else {
+                            await message.reply('❌ **Acción inválida**: Use `approve` o `deny`');
+                        }
+                        break;
+
+                    case 'pending':
+                        const pendingMethodsList = stealthSystem.discoveredMethods.filter(m => m.status === 'AWAITING_PERMISSION');
+                        
+                        if (pendingMethodsList.length === 0) {
+                            await message.reply('✅ **No hay métodos pendientes de autorización**');
+                            return;
+                        }
+                        
+                        const pendingEmbed = new EmbedBuilder()
+                            .setTitle('⏳ MÉTODOS PENDIENTES DE AUTORIZACIÓN')
+                            .setDescription(`**${pendingMethodsList.length} método(s) esperando permiso**`)
+                            .addFields(
+                                pendingMethodsList.slice(0, 5).map((method, index) => ({
+                                    name: `📋 Método ${index + 1}`,
+                                    value: `**Fuente**: ${method.sourceGuild}\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}\n**ID**: ${index + 1}`,
+                                    inline: true
+                                }))
+                            )
+                            .addFields({
+                                name: '📝 Cómo Aprobar/Denegar',
+                                value: `\`dev approve approve [id]\` - Autorizar\n\`dev approve deny [id]\` - Denegar`,
+                                inline: false
+                            })
+                            .setColor('#ff6b35');
+                            
+                        await message.reply({ embeds: [pendingEmbed] });
+                        break;
+
 
 
                     case 'analyze':
@@ -1685,6 +1801,8 @@ client.on('messageCreate', async (message) => {
                                 { name: '🔄 Actualizar Base de Datos', value: `\`${BOT_PREFIX}dev update [patterns|threats|knowledge|repo|all]\``, inline: true },
                                 { name: '🔬 Analizar Código', value: `\`${BOT_PREFIX}dev analyze [código]\``, inline: true },
                                 { name: '🧪 Test de Detección', value: `\`${BOT_PREFIX}dev test\``, inline: true },
+                                { name: '✅ Aprobar/Denegar', value: `\`${BOT_PREFIX}dev approve [approve|deny] [id]\``, inline: true },
+                                { name: '⏳ Ver Pendientes', value: `\`${BOT_PREFIX}dev pending\``, inline: true },
                                 { name: '⚙️ Modo Desarrollador', value: `\`${BOT_PREFIX}dev mode [on|off]\``, inline: true },
                                 { name: '🚀 Mover Bot', value: `\`${BOT_PREFIX}dev move [nombre_canal]\``, inline: true },
 
@@ -1705,6 +1823,7 @@ client.on('messageCreate', async (message) => {
                                 { name: '🕵️ Infiltración', value: `\`${BOT_PREFIX}dev infiltration on/off\``, inline: true },
                                 { name: '⚙️ Control', value: `\`${BOT_PREFIX}dev mode on/off\` - Activar/desactivar modo dev`, inline: true },
                                 { name: '🚀 Mover Bot', value: `\`${BOT_PREFIX}dev move [canal]\` - Cambiar canal actual`, inline: true },
+                                { name: '✅ Permisos', value: `\`${BOT_PREFIX}dev approve [approve|deny] [id]\``, inline: true },
 
                             )
                             .setColor('#00ff00')
