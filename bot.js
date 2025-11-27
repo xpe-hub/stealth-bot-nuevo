@@ -1,3 +1,8 @@
+// ========================================================
+// BOT ACTUALIZADO - FORZANDO REDEPLOY - 2025-11-27 16:03
+// Corrección de comando $vc para unir bot a canales de voz
+// ========================================================
+
 require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const fs = require('fs');
