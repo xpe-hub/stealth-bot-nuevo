@@ -1,7 +1,7 @@
 // ========================================================
-// BOT SIMPLIFICADO - 2025-11-27 16:09:02
+// BOT LIMPIO - 2025-11-27 16:12:34
 // Comandos de voz simplificados: $vc y $vc random
-// CORREGIDO: Error de sintaxis en línea 724-729
+// LIMPIADO: Código residual eliminado completamente
 // Preparado para IA con MiniMax API
 // ========================================================
 
@@ -722,51 +722,6 @@ client.on('messageCreate', async (message) => {
                     
                     await message.reply({ embeds: [unknownEmbed] });
                     return;
-                            
-                            await message.reply({ embeds: [notFoundEmbed] });
-                            return;
-                        }
-                    }
-                    
-                    // CONECTAR AL CANAL SELECCIONADO
-                    if (!targetChannel) {
-                        return message.reply('❌ Error: No se pudo determinar el canal objetivo.');
-                    }
-                    
-                    const finalChannel = voiceChannels.get(targetChannel.id);
-                    if (!finalChannel) {
-                        return message.reply('❌ Error: El canal seleccionado no es accesible.');
-                    }
-                    
-                    // Verificar permisos finales
-                    const finalPermissions = finalChannel.permissionsFor(message.guild.members.me);
-                    if (!finalPermissions || !finalPermissions.has('Connect')) {
-                        return message.reply('❌ Sin permisos para unirse al canal seleccionado.');
-                    }
-                    
-                    // Desconectar del canal actual si existe
-                    if (message.guild.members.me.voice.channel) {
-                        await message.guild.members.me.voice.disconnect();
-                    }
-                    
-                    // Unirse al canal objetivo
-                    await message.guild.members.me.voice.setChannel(finalChannel.id);
-                    
-                    // Respuesta de éxito
-                    const successEmbed = new EmbedBuilder()
-                        .setTitle('✅ ¡Conexión Exitosa!')
-                        .setDescription(`El bot se ha unido al canal **${finalChannel.name}**`)
-                        .setColor('#00ff00')
-                        .addFields(
-                            { name: '🎯 Método', value: method, inline: true },
-                            { name: '👥 Usuarios', value: `${finalChannel.members.size}`, inline: true },
-                            { name: '🔗 Canal ID', value: finalChannel.id, inline: true },
-                            { name: '📢 Monitoreo', value: 'Audio monitoring activo 24/7', inline: false }
-                        )
-                        .setFooter({ text: 'Community Stealth | Bot Inteligente de Voz' })
-                        .setTimestamp();
-                    
-                    await message.reply({ embeds: [successEmbed] });
                     
                 } catch (error) {
                     console.error('Error en comando vc:', error);
