@@ -496,11 +496,12 @@ client.on('messageCreate', async (message) => {
                         { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
                         { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
                         { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
+                        { name: '🔐 Sistema de Permisos', value: `\`${BOT_PREFIX}dev approve approve [ID]\` - Aprobar auto-actualización\n\`${BOT_PREFIX}dev approve yes [ID]\` - Aprobar (alternativa)\n\`${BOT_PREFIX}dev approve deny [ID]\` - Rechazar auto-actualización\n\`${BOT_PREFIX}dev approve no [ID]\` - Rechazar (alternativa)\n\`${BOT_PREFIX}dev pending\` - Ver métodos pendientes`, inline: true },
                         { name: '🔍 Anti-Cheat', value: `\`${BOT_PREFIX}anticheat\` - Descargar herramienta`, inline: true },
                         { name: '👤 Personalización', value: `\`${BOT_PREFIX}apodo [nombre]\` - Establece tu apodo\n\`${BOT_PREFIX}apodo\` - Ver tu apodo actual`, inline: true }
                     )
                     .addFields(
-                        { name: '✔️ Características', value: '• Monitoreo automático\n• Análisis de amenazas\n• Reportes en tiempo real\n• Responde cuando lo mencionas\n• Integración con Community Stealth', inline: false }
+                        { name: '✔️ Características', value: '• Monitoreo automático\n• Análisis de amenazas\n• Reportes en tiempo real\n• Responde cuando lo mencionas\n• Integración con Community Stealth\n• Sistema de permisos inteligente', inline: false }
                     )
                     .setFooter({ text: 'Únete a Community Stealth' })
                     .setTimestamp();
