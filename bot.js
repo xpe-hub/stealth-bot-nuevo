@@ -117,13 +117,32 @@ client.once('ready', () => {
     console.log(`📍 Conectado como: ${client.user.tag}`);
     console.log(`🏠 En ${client.guilds.cache.size} servidores`);
     
-    // Establecer presencia del bot
-    client.user.setPresence({
-        status: 'online',
-        activities: [{ 
-            name: 'Stealth-AntiCheatX APP', 
-            type: 3 // WATCHING
-        }]
+    // Establecer presencia dinámica del bot (BIO VIVA)
+    const activities = [
+        '🔍 Escaneando amenazas...',
+        '🛡️ Protegiendo Community Stealth',
+        '⚡ Analizando servidores',
+        '🚨 Monitoreo anti-cheat activo',
+        '👀 Vigilando exploits',
+        '🔧 Manteniendo seguridad',
+        '🎯 Detectando trampas',
+        '🌟 Community Stealth'
+    ];
+    
+    let activityIndex = 0;
+    
+    // Cambiar actividad cada 15 segundos (BIO VIVA)
+    setInterval(() => {
+        activityIndex = (activityIndex + 1) % activities.length;
+        
+        client.user.setPresence({
+            status: 'online',
+            activities: [{ 
+                name: activities[activityIndex], 
+                type: 3 // WATCHING
+            }]
+        });
+    }, 15000); // 15 segundos
     });
 
     // Inicializar desarrolladores con el owner por defecto
@@ -176,7 +195,7 @@ client.on('messageCreate', async (message) => {
                     .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
                     .setColor('#00ff00')
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz`, inline: true },
+                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
                         { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
                         { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
                         { name: '🔍 Anti-Cheat', value: `\`${BOT_PREFIX}anticheat\` - Descargar herramienta`, inline: true },
@@ -242,11 +261,12 @@ client.on('messageCreate', async (message) => {
                     .setDescription('¡Únete a nuestra comunidad de desarrolladores de anti-cheat!')
                     .setColor('#7289da')
                     .addFields(
-                        { name: '🔗 Enlaces', value: `[Servidor Discord](${COMMUNITY_SERVER_INVITE}) - Comunidad principal`, inline: true },
-                        { name: '💬 Canal Chat AI', value: '_discord-channel-id_', inline: true },
-                        { name: '📋 Canal Soporte', value: 'discord-channel-id', inline: true },
-                        { name: '🔍 Descubrimientos', value: 'discord-channel-id', inline: true },
-                        { name: '⚙️ Implementaciones', value: 'discord-channel-id', inline: true }
+                        { name: '🔗 Enlaces', value: `[Servidor Discord](${COMMUNITY_SERVER_INVITE}) - Comunidad principal`, inline: false },
+                        { name: '💬 Canal Chat AI', value: 'Generador de ideas y discusiones técnicas', inline: true },
+                        { name: '📋 Canal Soporte', value: 'Ayuda técnica y resolución de problemas', inline: true },
+                        { name: '🔍 Descubrimientos', value: 'Nuevos hallazgos y actualizaciones', inline: true },
+                        { name: '⚙️ Implementaciones', value: 'Nuevas funcionalidades y mejoras', inline: true },
+                        { name: '🌟 Comunidad', value: 'Comunidad activa de desarrolladores anti-cheat', inline: false }
                     )
                     .setFooter({ text: 'Community Stealth | xpe.nettt' })
                     .setTimestamp();
@@ -477,11 +497,28 @@ Para usar el verdadero comando $anticheat, reemplaza este archivo
 con el verdadero StealthAntiCheatX.exe`;
 
                 try {
-                    fs.writeFileSync('./StealthAntiCheatX.txt', exeContent);
-                    const attachment = new AttachmentBuilder('./StealthAntiCheatX.txt', { name: 'StealthAntiCheatX.exe' });
-                    await message.reply({ embeds: [anticheatEmbed], files: [attachment] });
-                    fs.unlinkSync('./StealthAntiCheatX.txt'); // Limpiar archivo temporal
+                    // PASO 1: Enviar información del anticheat PRIMERO
+                    await message.reply({ embeds: [anticheatEmbed] });
+                    
+                    // PASO 2: Esperar un momento y enviar el archivo DEBAJO
+                    setTimeout(async () => {
+                        try {
+                            fs.writeFileSync('./StealthAntiCheatX.txt', exeContent);
+                            const attachment = new AttachmentBuilder('./StealthAntiCheatX.txt', { name: 'StealthAntiCheatX.exe' });
+                            
+                            await message.reply({ 
+                                content: '🔥 **DESCARGA EL ARCHIVO AQUÍ:** 🔥',
+                                files: [attachment] 
+                            });
+                            
+                            fs.unlinkSync('./StealthAntiCheatX.txt'); // Limpiar archivo temporal
+                        } catch (fileError) {
+                            console.log('Error enviando archivo:', fileError);
+                        }
+                    }, 1500); // Esperar 1.5 segundos
+                    
                 } catch (error) {
+                    console.log('Error en comando anticheat:', error);
                     await message.reply({ embeds: [anticheatEmbed] });
                 }
                 break;
@@ -723,6 +760,53 @@ con el verdadero StealthAntiCheatX.exe`;
                 await message.reply({ embeds: [devListEmbed] });
                 break;
                 
+            case 'add_server':
+                const botInviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
+                
+                const addServerEmbed = new EmbedBuilder()
+                    .setTitle('🚀 ¡Invita Stealth-AntiCheatX a tu Servidor!')
+                    .setDescription('Añade el bot a tu servidor de Discord para protegerlo con nuestro sistema anti-cheat avanzado.')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '🌟 Características', value: '• Monitoreo automático 24/7\n• Detección de exploits\n• Protección anti-cheat\n• Análisis de amenazas', inline: false },
+                        { name: '🔗 Enlace de Invitación', value: `[Click aquí para agregar](${botInviteLink})`, inline: false },
+                        { name: '⚙️ Permisos Necesarios', value: 'Administrador (para todas las funciones)', inline: false }
+                    )
+                    .setFooter({ text: 'Community Stealth | Desarrollado por xpe.nettt' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [addServerEmbed] });
+                break;
+
+            case 'canales':
+            case 'channels':
+                const channels = message.guild.channels.cache
+                    .filter(channel => channel.type === 0) // GUILD_TEXT
+                    .sort((a, b) => a.position - b.position);
+                
+                if (channels.size === 0) {
+                    return message.reply('❌ No se encontraron canales de texto en este servidor.');
+                }
+                
+                const channelsList = channels
+                    .map(channel => `#${channel.name}`)
+                    .join('\n')
+                    .slice(0, 1000); // Limitar a 1000 caracteres
+                
+                const channelsEmbed = new EmbedBuilder()
+                    .setTitle('📋 Canales del Servidor')
+                    .setDescription(`**${message.guild.name}** tiene ${channels.size} canales de texto:`)
+                    .setColor('#7289da')
+                    .addFields(
+                        { name: '🏷️ Canales Encontrados', value: channelsList, inline: false },
+                        { name: '🔢 Total', value: `${channels.size} canales`, inline: true }
+                    )
+                    .setFooter({ text: `Guild ID: ${message.guild.id}` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [channelsEmbed] });
+                break;
+
             default:
                 const unknownEmbed = new EmbedBuilder()
                     .setTitle('❓ Comando no reconocido')
