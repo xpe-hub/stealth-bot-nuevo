@@ -1,0 +1,60 @@
+{
+  "name": "stealth-anticheat-bot-render",
+  "version": "1.0.0",
+  "description": "Stealth-AntiCheatX Discord Bot - Render.com Optimized",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node bot.js",
+    "test": "node test.js",
+    "health": "curl http://localhost:10000/health"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "8.x"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "anticheat",
+    "stealth",
+    "gaming",
+    "security",
+    "render"
+  ],
+  "author": {
+    "name": "xpe.nettt",
+    "email": "xpepanels@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://discord.gg/stealth-anticheat",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xpe-hub/stealth-bot-nuevo"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/xpe-hub"
+  },
+  "config": {
+    "port": 10000
+  },
+  "enginesStrict": true,
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}
