@@ -298,12 +298,17 @@ class StealthAntiCheatInfiltrationSystem {
                 await cmdChannel.send({ embeds: [cmdEmbed] });
             }
 
-            // NOTIFICACIÓN AUTOMÁTICA A DESARROLLADORES - SISTEMA 100% AUTOMÁTICO
+            // NOTIFICACIÓN Y AUTO-ACTUALIZACIÓN AUTOMÁTICA DEL BOT
             const implChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
             if (implChannel) {
+                // AUTO-ACTUALIZAR REPOSITORIO DEL BOT
+                const autoUpdateResult = await this.updateAntiCheatRepository();
+                
                 const devEmbed = new EmbedBuilder()
-                    .setTitle('💬 CONSULTA AUTOMÁTICA A DESARROLLADORES')
-                    .setDescription('🚀 **NUEVO MÉTODO DETECTADO - REQUIERE IMPLEMENTACIÓN**')
+                    .setTitle('🤖 BOT AUTO-ACTUALIZÁNDOSE')
+                    .setDescription(autoUpdateResult?.success ? 
+                        '🚀 **NUEVO MÉTODO DETECTADO - AUTO-ACTUALIZACIÓN EN PROGRESO**' : 
+                        '⚠️ **NUEVO MÉTODO DETECTADO - ERROR EN AUTO-ACTUALIZACIÓN**')
                     .addFields(
                         { name: '🕵️ Método Encontrado', value: `**Fuente**: ${method.sourceGuild}\\n**Canal**: ${method.sourceChannel}\\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}`, inline: false },
                         { name: '💬 Contenido Detectado', value: method.content.substring(0, 200) + (method.content.length > 200 ? '...' : ''), inline: false }
@@ -314,16 +319,20 @@ class StealthAntiCheatInfiltrationSystem {
                         { name: '🎮 Códigos de Cheat', value: method.findings.cheatCodes.length > 0 ? method.findings.cheatCodes.join('\\n') : 'Ninguno detectado', inline: true }
                     )
                     .addFields(
-                        { name: '❓ PREGUNTA PARA DESARROLLADORES', value: '**¿Pueden implementar la detección de este método en Stealth-AntiCheatX?**\\n**¿Pueden compilar el EXE actualizado y enviarlo?**', inline: false },
-                        { name: '🚀 ACCIÓN REQUERIDA', value: '⚡ Actualizar anti-cheat con nuevos patrones detectados\\n📤 Compilar nueva versión del EXE\\n🎯 No dejar escapar ningún xiter malo', inline: false }
+                        { name: '🤖 DECISIÓN DEL BOT', value: autoUpdateResult?.success ? 
+                            '✅ **SÍ** - Implementaré la detección en mi código\\n✅ **SÍ** - Actualizaré mi repositorio automáticamente' : 
+                            '❌ **NO** - Error en auto-actualización del repositorio', inline: false },
+                        { name: '🚀 ACCIONES COMPLETADAS', value: autoUpdateResult?.success ? 
+                            `⚡ ✅ Detectores actualizados (${autoUpdateResult.patterns} patrones)\\n📤 ✅ Repositorio actualizado en GitHub\\n🔄 🚨 **NECESITO COMPILAR EXE ACTUALIZADO**` : 
+                            '❌ Error en auto-actualización\\n🚨 Requiere intervención manual', inline: false }
                     )
-                    .setColor('#ff6b35')
-                    .setFooter({ text: '🚨 SISTEMA AUTOMÁTICO ACTIVO 🚨 - Desarrolladores respondan para implementación' });
+                    .setColor(autoUpdateResult?.success ? '#00ff00' : '#ff0000')
+                    .setFooter({ text: autoUpdateResult?.success ? '🤖 BOT AUTO-ACTUALIZADO ✅' : '🤖 ERROR EN AUTO-ACTUALIZACIÓN ❌' });
 
                 await implChannel.send({ embeds: [devEmbed] });
                 
-                // Marcar automáticamente como consultado
-                method.status = 'CONSULTED';
+                // Marcar automáticamente como auto-consultado
+                method.status = 'AUTO_CONSULTED';
                 this.saveInfiltrationData();
             }
 
@@ -427,11 +436,49 @@ class StealthAntiCheatInfiltrationSystem {
 
             const updateContent = JSON.stringify(newPatterns, null, 2);
             
-            // Implementar actualización de GitHub (placeholder)
+            // AUTO-ACTUALIZAR REPOSITORIO GITHUB
+            const commitMessage = `🤖 Bot Auto-Update: ${newPatterns.length} nuevos patrones de detección (${new Date().toLocaleString()})`;
+            
+            // Usar API de GitHub para actualizar archivo automáticamente
+            const githubApiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/anti-cheat-patterns.json`;
+            
+            // Obtener SHA del archivo actual
+            const currentFileResponse = await fetch(githubApiUrl, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'Stealth-AntiCheatX-Bot'
+                }
+            });
+            
+            let currentSha = null;
+            if (currentFileResponse.ok) {
+                const currentFile = await currentFileResponse.json();
+                currentSha = currentFile.sha;
+            }
+            
+            // Hacer commit del nuevo contenido
+            const commitResponse = await fetch(githubApiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Stealth-AntiCheatX-Bot'
+                },
+                body: JSON.stringify({
+                    message: commitMessage,
+                    content: Buffer.from(updateContent).toString('base64'),
+                    sha: currentSha
+                })
+            });
+            
+            const commitSuccess = commitResponse.ok;
             const result = {
-                success: true,
+                success: commitSuccess,
                 patterns: newPatterns.length,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                commitUrl: commitSuccess ? 'https://github.com/' + REPO_OWNER + '/' + REPO_NAME + '/commit' : null
             };
 
             // Reportar en canal de implementaciones
