@@ -733,45 +733,164 @@ client.on('messageCreate', async (message) => {
                         }
                     }
                 } else {
-                    // Unirse al canal especificado por nombre
-                    const channelName = args.join(' ').toLowerCase();
-                    
-                    // Buscar canal de voz por nombre
-                    const voiceChannel = message.guild.channels.cache.find(channel => 
+                    // OPCIONES INTELIGENTES Y CANALES ESPECÍFICOS
+                    const input = args.join(' ').toLowerCase().trim();
+                    const voiceChannels = message.guild.channels.cache.filter(channel => 
                         channel.type === 2 && 
-                        channel.name.toLowerCase().includes(channelName)
+                        channel.name && 
+                        channel.id && 
+                        !channel.name.includes('afk') &&
+                        !channel.name.includes('AFK')
                     );
                     
-                    if (!voiceChannel) {
-                        // Mostrar canales disponibles
-                        const availableChannels = message.guild.channels.cache
-                            .filter(channel => channel.type === 2)
-                            .map(channel => channel.name)
-                            .slice(0, 8)
-                            .join('\n');
+                    // Obtener canales accesibles para opciones inteligentes
+                    const accessibleChannels = [];
+                    for (const channel of voiceChannels.values()) {
+                        try {
+                            if (!channel.guild.channels.cache.has(channel.id)) continue;
+                            
+                            const permissions = channel.permissionsFor(message.guild.members.me);
+                            if (permissions && permissions.has('Connect') && permissions.has('ViewChannel')) {
+                                accessibleChannels.push({
+                                    name: channel.name,
+                                    id: channel.id,
+                                    members: channel.members.size
+                                });
+                            }
+                        } catch (error) {
+                            // Ignorar canales con errores
+                        }
+                    }
+                    
+                    // ORDENAR POR POPULARIDAD
+                    accessibleChannels.sort((a, b) => b.members - a.members);
+                    
+                    let targetChannel = null;
+                    
+                    // OPCIONES INTELIGENTES
+                    if (input === 'random' || input === 'aleatorio') {
+                        // Unirse a canal aleatorio
+                        if (accessibleChannels.length === 0) {
+                            return message.reply('❌ No hay canales accesibles para unirme aleatoriamente.');
+                        }
                         
-                        const errorEmbed = new EmbedBuilder()
-                            .setTitle('❌ Canal No Encontrado')
-                            .setDescription(`No se encontró un canal de voz que contenga "${args.join(' ')}"`)
-                            .setColor('#ff0000')
+                        const randomIndex = Math.floor(Math.random() * accessibleChannels.length);
+                        targetChannel = accessibleChannels[randomIndex];
+                        
+                    } else if (input === 'most_active' || input === 'activo' || input === 'popular') {
+                        // Unirse al más activo
+                        if (accessibleChannels.length === 0) {
+                            return message.reply('❌ No hay canales accesibles.');
+                        }
+                        
+                        targetChannel = accessibleChannels[0]; // Ya está ordenado por popularidad
+                        
+                    } else if (input === 'auto' || input === 'automático') {
+                        // Unirse automáticamente al más popular (con más de 1 usuario)
+                        const popularChannels = accessibleChannels.filter(ch => ch.members >= 1);
+                        if (popularChannels.length === 0) {
+                            return message.reply('❌ No hay canales con usuarios activos para unirme automáticamente.');
+                        }
+                        
+                        targetChannel = popularChannels[0];
+                        
+                    } else {
+                        // Buscar canal por nombre específico
+                        targetChannel = voiceChannels.find(channel => 
+                            channel.name.toLowerCase().includes(input)
+                        );
+                        
+                        if (!targetChannel) {
+                            // Canal no encontrado - mostrar opciones inteligentes
+                            const availableChannels = accessibleChannels.slice(0, 6).map(ch => 
+                                `• **${ch.name}** (${ch.members} usuarios)`
+                            ).join('\n');
+                            
+                            const smartEmbed = new EmbedBuilder()
+                                .setTitle('❌ Canal No Encontrado')
+                                .setDescription(`No se encontró un canal de voz que contenga "${args.join(' ')}"`)
+                                .setColor('#ff0000')
+                                .addFields(
+                                    { 
+                                        name: '🎯 Opciones Inteligentes', 
+                                        value: `\`${BOT_PREFIX}vc random\` - Unirse a canal aleatorio\n\`${BOT_PREFIX}vc most_active\` - Unirse al más activo\n\`${BOT_PREFIX}vc auto\` - Unirse al más popular`, 
+                                        inline: false 
+                                    },
+                                    { 
+                                        name: `📋 Canales Disponibles (${accessibleChannels.length})`, 
+                                        value: availableChannels || 'No hay canales accesibles', 
+                                        inline: false 
+                                    },
+                                    { 
+                                        name: '💡 Sugerencia', 
+                                        value: `Prueba con una de las opciones inteligentes de arriba o usa un nombre más específico.`, 
+                                        inline: false 
+                                    }
+                                )
+                                .setFooter({ text: 'Community Stealth | Sistema Inteligente de Voz' })
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [smartEmbed] });
+                            return;
+                        }
+                        
+                        // Convertir a objeto para compatibilidad
+                        targetChannel = {
+                            name: targetChannel.name,
+                            id: targetChannel.id,
+                            members: targetChannel.members.size
+                        };
+                    }
+                    
+                    // VERIFICAR PERMISOS ANTES DE CONECTAR
+                    const voiceChannel = voiceChannels.get(targetChannel.id);
+                    if (!voiceChannel) {
+                        return message.reply('❌ Error: El canal no existe o no es accesible.');
+                    }
+                    
+                    const permissions = voiceChannel.permissionsFor(message.guild.members.me);
+                    if (!permissions || !permissions.has('Connect')) {
+                        const permissionEmbed = new EmbedBuilder()
+                            .setTitle('❌ Sin Permisos')
+                            .setDescription(`No tengo permisos para unirme al canal **${targetChannel.name}**`)
                             .addFields(
-                                { 
-                                    name: '🔍 Canales Disponibles', 
-                                    value: availableChannels || 'No hay canales de voz disponibles', 
-                                    inline: false 
-                                },
-                                { 
-                                    name: '💡 Sugerencias', 
-                                    value: '• Usa un nombre más específico\n• Incluye palabras del nombre (ej: "general" para "General de Gaming")\n• O entra a un canal y usa `$vc` sin parámetros', 
-                                    inline: false 
-                                }
+                                { name: '🔧 Permisos Necesarios', value: '• CONNECT - Conectarse\n• SPEAK - Hablar\n• VIEW_CHANNEL - Ver canal', inline: false },
+                                { name: '⚙️ Solución', value: 'Pide al administrador que me dé permisos de voz', inline: false }
                             )
-                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
+                            .setColor('#ff0000')
                             .setTimestamp();
                         
-                        await message.reply({ embeds: [errorEmbed] });
+                        await message.reply({ embeds: [permissionEmbed] });
                         return;
                     }
+                    
+                    // DESCONECTAR DEL CANAL ANTERIOR
+                    if (message.guild.members.me.voice.channel) {
+                        await message.guild.members.me.voice.disconnect();
+                    }
+                    
+                    // CONECTAR AL CANAL OBJETIVO
+                    await message.guild.members.me.voice.setChannel(voiceChannel.id);
+                    
+                    // RESPUESTA ÉXITO CON DETALLES DE LA ACCIÓN
+                    const successEmbed = new EmbedBuilder()
+                        .setTitle('✅ Bot Conectado Inteligentemente')
+                        .setDescription(`El bot se ha unido al canal **${targetChannel.name}**`)
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '🎯 Método de Conexión', value: input === 'random' ? 'Aleatorio' : input === 'most_active' ? 'Más Activo' : input === 'auto' ? 'Automático' : 'Específico', inline: true },
+                            { name: '👥 Usuarios', value: `${targetChannel.members}`, inline: true },
+                            { name: '🔗 Canal ID', value: targetChannel.id, inline: true }
+                        )
+                        .addFields(
+                            { name: '📢 Monitoreo Activo', value: '¡El bot está monitoreando este canal de voz!', inline: false },
+                            { name: '🎧 Funciones', value: '• Audio monitoring\n• Voice detection\n• Anti-cheat surveillance', inline: false }
+                        )
+                        .setFooter({ text: `Community Stealth | ${input === 'random' ? 'Selección Aleatoria' : input === 'most_active' ? 'Más Popular' : input === 'auto' ? 'Automático' : 'Específico'}` })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [successEmbed] });
+                    return;
                     
                     try {
                         // Verificar permisos antes de conectarse
