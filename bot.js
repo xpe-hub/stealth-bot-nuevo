@@ -143,7 +143,6 @@ client.once('ready', () => {
             }]
         });
     }, 15000); // 15 segundos
-    });
 
     // Inicializar desarrolladores con el owner por defecto
     if (!developers.owners.includes(BOT_OWNER_ID)) {
