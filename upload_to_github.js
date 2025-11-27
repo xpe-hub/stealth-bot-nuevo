@@ -4,7 +4,7 @@ const https = require('https');
 // Configuración
 const GITHUB_TOKEN = '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';
 const OWNER = 'xpe-hub';
-const REPO = 'Stealth-AntiCheat-MCP';
+const REPO = 'stealth-bot-nuevo';
 
 // Función para hacer petición HTTP
 function makeRequest(options, data = null) {
@@ -64,8 +64,21 @@ async function uploadFile(path, content) {
   }
   
   // Crear o actualizar archivo
+  const commitMessage = path === 'bot.js' 
+    ? `🤖 ACTUALIZACIÓN: Sistema de Permisos y Auto-Actualización\n\n` +
+      `✨ Nuevas características implementadas:\n` +
+      `• Detección automática de patrones de cheats\n` +
+      `• Consultas automáticas a desarrolladores\n` +
+      `• Sistema de permisos con comando 'dev approve'\n` +
+      `• Auto-actualización del repositorio cuando es aprobada\n` +
+      `• Monitoreo inteligente de threats y exploits\n\n` +
+      `🔧 Desarrollado por: xpe.nettt\n` +
+      `📅 Fecha: ${new Date().toLocaleString()}\n` +
+      `🏠 Community Stealth`
+    : `Update ${path} - ${new Date().toISOString()}`;
+    
   const putData = JSON.stringify({
-    message: `Update ${path} - Railway deployment ready ${new Date().toISOString()}`,
+    message: commitMessage,
     content: encodedContent,
     sha: sha
   });
@@ -88,35 +101,39 @@ async function uploadFile(path, content) {
 }
 
 async function main() {
-  console.log('🚀 Subiendo archivos a GitHub para Railway...');
+  console.log('🚀 Subiendo bot.js actualizado con sistema de permisos a GitHub...');
   
   try {
-    // Leer archivos del proyecto
-    const projectPath = '/workspace/Stealth-AntiCheat-MCP';
+    // Subir el bot.js actualizado
+    const botJsPath = '/workspace/bot.js';
     
-    // Archivos críticos para subir
-    const files = [
-      'src/index.ts',
-      'railway.js', 
-      'RAILWAY.md',
-      'package.json',
-      'src/discord-client.ts'
-    ];
-    
-    for (const file of files) {
-      try {
-        const content = fs.readFileSync(`${projectPath}/${file}`, 'utf8');
-        await uploadFile(file, content);
-      } catch (error) {
-        console.error(`❌ Error subiendo ${file}:`, error.message);
-      }
+    if (!fs.existsSync(botJsPath)) {
+      throw new Error('bot.js no encontrado en /workspace/');
     }
     
-    console.log('🎯 ¡Deploy a Railway iniciado!');
-    console.log('🔗 Railway debería detectar los cambios en 1-2 minutos');
+    const botJsContent = fs.readFileSync(botJsPath, 'utf8');
+    console.log('📄 Archivo bot.js leído exitosamente');
+    console.log(`📊 Tamaño: ${botJsContent.length} caracteres`);
+    
+    // Subir bot.js
+    const result = await uploadFile('bot.js', botJsContent);
+    console.log('✅ bot.js subido exitosamente');
+    
+    // Resumen
+    console.log('\n🎉 ¡Actualización completada!');
+    console.log('📋 Resumen de cambios:');
+    console.log('   ✅ Sistema de detección automática de cheats');
+    console.log('   ✅ Consultas automáticas a desarrolladores');
+    console.log('   ✅ Sistema de permisos con dev approve');
+    console.log('   ✅ Auto-actualización del repositorio');
+    console.log('   ✅ Monitoreo inteligente de threats');
+    
+    console.log('\n🔗 El bot está listo para deployment en Railway');
+    console.log('📁 Repositorio:', `https://github.com/${OWNER}/${REPO}`);
     
   } catch (error) {
     console.error('❌ Error general:', error.message);
+    throw error;
   }
 }
 
