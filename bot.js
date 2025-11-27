@@ -311,7 +311,7 @@ client.on('messageCreate', async (message) => {
                         await message.reply({ embeds: [voiceEmbed] });
                     }
                 } else {
-                    // Unirse al canal especificado
+                    // Unirse al canal especificado (VERSIÓN CORREGIDA)
                     const channelName = args.join(' ');
                     const guild = message.guild;
                     
@@ -327,22 +327,10 @@ client.on('messageCreate', async (message) => {
                             .setDescription(`No se encontró un canal de voz con el nombre "${channelName}"`)
                             .setColor('#ff0000')
                             .addFields(
-                                { name: '🔍 Búsqueda', value: `Canales disponibles: ${guild.voiceChannels.map(ch => ch.name).slice(0, 5).join(', ')}...`, inline: false },
-                                { name: '💡 Sugerencia', value: 'Usa un nombre más específico o verifica el nombre exacto del canal.', inline: false }
+                                { name: '🔍 Canales Disponibles', value: guild.voiceChannels.map(ch => ch.name).slice(0, 5).join('\n') || 'No hay canales de voz', inline: false },
+                                { name: '💡 Sugerencia', value: `Usa un nombre más específico o verifica el nombre exacto.`, inline: false }
                             )
-                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre exacto del canal]` })
-                            .setTimestamp();
-                        
-                        await message.reply({ embeds: [errorEmbed] });
-                        return;
-                    }
-                    
-                    if (!message.member.voice) {
-                        const errorEmbed = new EmbedBuilder()
-                            .setTitle('❌ No Estás en un Canal de Voz')
-                            .setDescription('Necesitas estar conectado a un canal de voz para usar este comando.')
-                            .setColor('#ff0000')
-                            .setFooter({ text: 'Únete a un canal de voz primero' })
+                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [errorEmbed] });
@@ -350,37 +338,40 @@ client.on('messageCreate', async (message) => {
                     }
                     
                     try {
-                        // Desconectar del canal actual si está conectado
+                        // Si el bot ya está en un canal, desconectarlo primero
                         if (message.guild.members.me.voice.channel) {
                             await message.guild.members.me.voice.disconnect();
                         }
                         
-                        // Conectar al nuevo canal
+                        // El bot se conecta al canal especificado
                         await message.guild.members.me.voice.setChannel(voiceChannel.id);
                         
                         const successEmbed = new EmbedBuilder()
-                            .setTitle('✅ Conectado al Canal de Voz')
-                            .setDescription(`El bot se ha unido al canal **${voiceChannel.name}**`)
+                            .setTitle('✅ Bot Unido al Canal')
+                            .setDescription(`El bot se ha unido al canal de voz **${voiceChannel.name}**`)
                             .setColor('#00ff00')
                             .addFields(
-                                { name: '🎤 Canal', value: voiceChannel.name, inline: true },
-                                { name: '👥 Usuarios Conectados', value: `${voiceChannel.members.size}`, inline: true },
-                                { name: '🔗 ID del Canal', value: voiceChannel.id, inline: true }
+                                { name: '📢 Anuncio', value: '¡El bot está ahora en este canal para monitoreo!', inline: false },
+                                { name: '🔧 Estado', value: 'Monitoreo de audio activo', inline: true },
+                                { name: '⚠️ Nota', value: 'Para que el bot monitoree, debe tener permisos de voz', inline: true }
                             )
-                            .setFooter({ text: 'Community Stealth | xpe.nettt' })
+                            .setFooter({ text: `Canal: ${voiceChannel.name} | ID: ${voiceChannel.id}` })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [successEmbed] });
-                    } catch (error) {
-                        console.error('Error connecting to voice channel:', error);
+                        
+                    } catch (voiceError) {
+                        console.error('Error conectando al canal de voz:', voiceError);
                         
                         const errorEmbed = new EmbedBuilder()
                             .setTitle('❌ Error de Conexión')
-                            .setDescription('No se pudo conectar al canal de voz.')
+                            .setDescription(`No se pudo conectar al canal de voz.`)
                             .setColor('#ff0000')
                             .addFields(
-                                { name: '🔧 Error', value: error.message, inline: false }
+                                { name: '🔧 Posibles Soluciones', value: '• Verificar permisos de voz\n• El canal puede estar lleno\n• El bot puede estar en cooldown', inline: false },
+                                { name: '📞 Contacto', value: 'Si persiste el error, contacta al administrador', inline: false }
                             )
+                            .setFooter({ text: 'Error: ' + voiceError.message })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [errorEmbed] });
