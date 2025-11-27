@@ -10,6 +10,9 @@ const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('
 const fs = require('fs');
 const path = require('path');
 
+// MiniMax AI Integration
+const { minimaxChat, processMinimaxResponse, executeDiscordTool } = require('./minimax_integration');
+
 // Configuración del bot
 const client = new Client({
     intents: [
@@ -500,7 +503,7 @@ client.on('messageCreate', async (message) => {
                     .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
                     .setColor('#00ff00')
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
+                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}ai [mensaje]\` - IA MiniMax-M2\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
                         { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
                         { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
                         { name: '🔐 Sistema de Permisos', value: `\`${BOT_PREFIX}dev approve approve [ID]\` - Aprobar auto-actualización\n\`${BOT_PREFIX}dev approve yes [ID]\` - Aprobar (alternativa)\n\`${BOT_PREFIX}dev approve deny [ID]\` - Rechazar auto-actualización\n\`${BOT_PREFIX}dev approve no [ID]\` - Rechazar (alternativa)\n\`${BOT_PREFIX}dev pending\` - Ver métodos pendientes`, inline: true },
@@ -1376,6 +1379,65 @@ con el verdadero StealthAntiCheatX.exe`;
                     .setTimestamp();
                 
                 await message.reply({ embeds: [helpAddServerEmbed] });
+                break;
+                
+            case 'ai':
+            case 'minimax':
+                if (!process.env.MINIMAX_API_KEY) {
+                    return message.reply('❌ API key de MiniMax no configurada. Contacta al desarrollador.');
+                }
+                
+                if (!message.guild) {
+                    return message.reply('❌ Este comando solo funciona en servidores.');
+                }
+                
+                try {
+                    // Obtener contexto del servidor
+                    const serverContext = {
+                        name: message.guild.name,
+                        memberCount: message.guild.memberCount,
+                        ownerId: message.guild.ownerId,
+                        voiceChannels: message.guild.channels.cache.filter(c => c.type === 2).size,
+                        textChannels: message.guild.channels.cache.filter(c => c.type === 0).size,
+                        roles: message.guild.roles.cache.size,
+                        user: {
+                            id: message.author.id,
+                            username: message.author.username,
+                            tag: message.author.tag,
+                            isOwner: message.author.id === BOT_OWNER_ID,
+                            isBot: message.author.bot
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const userMessage = args.join(' ') || 'Hola, ¿en qué puedo ayudarte?';
+                    console.log(`🤖 [AI] ${message.author.tag} en ${message.guild.name}: ${userMessage}`);
+                    
+                    // Respuesta inicial
+                    const loadingMessage = await message.reply('🤖 *Pensando con MiniMax-M2...*');
+                    
+                    // Obtener respuesta de MiniMax
+                    const minimaxResponse = await minimaxChat(userMessage, serverContext);
+                    
+                    if (!minimaxResponse) {
+                        await loadingMessage.edit('❌ Error al conectar con MiniMax API. Intenta de nuevo en un momento.');
+                        return;
+                    }
+                    
+                    // Procesar respuesta y ejecutar herramientas
+                    const finalResponse = await processMinimaxResponse(minimaxResponse, message.guild, message);
+                    
+                    // Mostrar respuesta al usuario
+                    if (finalResponse && finalResponse.trim()) {
+                        await loadingMessage.edit(`🤖 **MiniMax-M2:**\n${finalResponse}`);
+                    } else {
+                        await loadingMessage.edit('✅ Herramientas ejecutadas. Consulta los resultados arriba.');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error en comando AI:', error);
+                    await message.reply('❌ Error interno del sistema AI. Contacta al desarrollador.');
+                }
                 break;
 
             case 'canales':

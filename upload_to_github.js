@@ -1,155 +1,110 @@
+// GitHub Upload Script - Bot IA Integration
 const fs = require('fs');
-const https = require('https');
+const path = require('path');
 
-// Configuración
-const GITHUB_TOKEN = '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';
-const OWNER = 'xpe-hub';
-const REPO = 'stealth-bot-nuevo';
+// API Configuration
+const API_URL = 'https://api.github.com';
+const headers = {
+    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+};
 
-// Función para hacer petición HTTP
-function makeRequest(options, data = null) {
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => body += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(body);
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            reject(new Error(`HTTP ${res.statusCode}: ${body}`));
-          }
-        } catch (e) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(body);
-          } else {
-            reject(new Error(`HTTP ${res.statusCode}: ${body}`));
-          }
+// Repository Information
+const owner = process.env.GITHUB_REPO_OWNER || 'xpe-hub';
+const repo = process.env.GITHUB_REPO_NAME || 'stealth-bot-nuevo';
+const branch = process.env.REPO_TARGET_BRANCH || 'main';
+
+// Files to upload
+const filesToUpload = [
+    {
+        path: 'bot.js',
+        description: 'Bot principal con comando $ai integrado con MiniMax-M2',
+        commitMessage: '🚀 Bot IA Integration: Agregado comando $ai con MiniMax-M2 Agentic capabilities'
+    },
+    {
+        path: 'minimax_integration.js',
+        description: 'Sistema completo de integración con MiniMax-M2 API',
+        commitMessage: '🤖 MiniMax Integration: Sistema completo de IA Agentic con Tool Calling'
+    },
+    {
+        path: '.env.example',
+        description: 'Configuración completa de variables de entorno incluyendo MiniMax',
+        commitMessage: '⚙️ Environment Config: Agregada configuración completa de MiniMax API'
+    },
+    {
+        path: 'minimax_config.env',
+        description: 'Configuración específica de MiniMax API',
+        commitMessage: '🔧 MiniMax Config: Variables de entorno específicas para IA'
+    }
+];
+
+async function uploadToGitHub() {
+    try {
+        console.log('🚀 Iniciando upload a GitHub...');
+        console.log(`📦 Repositorio: ${owner}/${repo}`);
+        console.log(`🌿 Branch: ${branch}`);
+
+        for (const file of filesToUpload) {
+            console.log(`\n📄 Subiendo ${file.path}...`);
+            
+            // Read file content
+            const fileContent = fs.readFileSync(file.path, 'utf8');
+            const base64Content = Buffer.from(fileContent).toString('base64');
+
+            // Check if file exists
+            const getFileUrl = `${API_URL}/repos/${owner}/${repo}/contents/${file.path}`;
+            const fileResponse = await fetch(getFileUrl, {
+                method: 'GET',
+                headers: headers
+            });
+
+            let sha;
+            if (fileResponse.ok) {
+                const fileData = await fileResponse.json();
+                sha = fileData.sha;
+                console.log(`📝 Archivo existente encontrado, actualizando...`);
+            } else {
+                console.log(`✨ Archivo nuevo, creándolo...`);
+            }
+
+            // Upload/update file
+            const updateData = {
+                message: file.commitMessage,
+                content: base64Content,
+                branch: branch
+            };
+
+            if (sha) {
+                updateData.sha = sha;
+            }
+
+            const updateUrl = `${API_URL}/repos/${owner}/${repo}/contents/${file.path}`;
+            const updateResponse = await fetch(updateUrl, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(updateData)
+            });
+
+            if (updateResponse.ok) {
+                console.log(`✅ ${file.path} subido correctamente!`);
+                console.log(`   📝 ${file.description}`);
+            } else {
+                const error = await updateResponse.json();
+                console.error(`❌ Error subiendo ${file.path}:`, error.message);
+                throw new Error(`Failed to upload ${file.path}`);
+            }
         }
-      });
-    });
-    
-    req.on('error', reject);
-    if (data) {
-      req.write(data);
+
+        console.log('\n🎉 ¡Todos los archivos subidos exitosamente!');
+        console.log('🚀 Railway debería reiniciar automáticamente en 1-2 minutos');
+        console.log('🤖 Tu bot ahora tendrá capacidades IA con MiniMax-M2!');
+        
+    } catch (error) {
+        console.error('❌ Error durante el upload:', error);
+        process.exit(1);
     }
-    req.end();
-  });
 }
 
-// Función para subir archivo a GitHub
-async function uploadFile(path, content) {
-  const encodedContent = Buffer.from(content).toString('base64');
-  
-  // Primero verificar si el archivo existe
-  let sha = null;
-  try {
-    const getOptions = {
-      hostname: 'api.github.com',
-      path: `/repos/${OWNER}/${REPO}/contents/${path}`,
-      method: 'GET',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Node.js'
-      }
-    };
-    
-    const response = await makeRequest(getOptions);
-    sha = response.sha;
-    console.log(`📝 Archivo ${path} existe, actualizando...`);
-  } catch (e) {
-    console.log(`📄 Archivo ${path} no existe, creando...`);
-  }
-  
-  // Crear o actualizar archivo
-  const commitMessage = path === 'bot.js' 
-    ? `🚀 MEJORA CRÍTICA: Comandos $vc y $add_server Funcionales\n\n` +
-      `🔥 PROBLEMAS RESUELTOS:\n` +
-      `• \\$vc ahora incluye logging detallado para debugging\n` +
-      `• \\$vc random funciona correctamente con mejor selección\n` +
-      `• \\$add_server procesa enlaces de Discord correctamente\n` +
-      `• \\$add_server bot muestra enlace de invitación del bot\n` +
-      `• Mejorado manejo de errores con mensajes claros\n` +
-      `• Agregadas confirmaciones visuales de conexión\n` +
-      `• Logging detallado en Railway para troubleshooting\n\n` +
-      `🔧 Comandos mejorados:\n` +
-      `• \\$vc [sin args] - Auto-join si estás en canal\n` +
-      `• \\$vc random - Canal aleatorio con usuarios\n` +
-      `• \\$add_server [link] - Procesa enlace de servidor\n` +
-      `• \\$add_server bot - Obtener enlace de invitación\n` +
-      `• \\$add_server [sin args] - Mostrar ayuda completa\n\n` +
-      `🎯 Funcionalidad completada:\n` +
-      `• Bot se conecta a canales de voz correctamente\n` +
-      `• Sistema de logging para monitorear actividad\n` +
-      `• Comandos de servidor completamente funcionales\n` +
-      `• Preparado para implementación de IA MiniMax\n\n` +
-      `🔧 Desarrollado por: xpe.nettt\n` +
-      `📅 Fecha: ${new Date().toLocaleString()}\n` +
-      `🏠 Community Stealth`
-    : `Update ${path} - ${new Date().toISOString()}`;
-    
-  const putData = JSON.stringify({
-    message: commitMessage,
-    content: encodedContent,
-    sha: sha
-  });
-  
-  const putOptions = {
-    hostname: 'api.github.com',
-    path: `/repos/${OWNER}/${REPO}/contents/${path}`,
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${GITHUB_TOKEN}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'Node.js'
-    }
-  };
-  
-  const response = await makeRequest(putOptions, putData);
-  console.log(`✅ ${path} subido exitosamente`);
-  return response;
-}
-
-async function main() {
-  console.log('🚀 Subiendo bot.js actualizado con sistema de permisos a GitHub...');
-  
-  try {
-    // Subir el bot.js actualizado
-    const botJsPath = '/workspace/bot.js';
-    
-    if (!fs.existsSync(botJsPath)) {
-      throw new Error('bot.js no encontrado en /workspace/');
-    }
-    
-    const botJsContent = fs.readFileSync(botJsPath, 'utf8');
-    console.log('📄 Archivo bot.js leído exitosamente');
-    console.log(`📊 Tamaño: ${botJsContent.length} caracteres`);
-    
-    // Subir bot.js
-    const result = await uploadFile('bot.js', botJsContent);
-    console.log('✅ bot.js subido exitosamente');
-    
-    // Resumen
-    console.log('\n🎉 ¡Actualización completada!');
-    console.log('📋 Resumen de cambios:');
-    console.log('   ✅ Sistema de detección automática de cheats');
-    console.log('   ✅ Consultas automáticas a desarrolladores');
-    console.log('   ✅ Sistema de permisos con dev approve');
-    console.log('   ✅ Auto-actualización del repositorio');
-    console.log('   ✅ Monitoreo inteligente de threats');
-    
-    console.log('\n🔗 El bot está listo para deployment en Railway');
-    console.log('📁 Repositorio:', `https://github.com/${OWNER}/${REPO}`);
-    
-  } catch (error) {
-    console.error('❌ Error general:', error.message);
-    throw error;
-  }
-}
-
-if (require.main === module) {
-  main();
-}
+// Run upload
+uploadToGitHub();
