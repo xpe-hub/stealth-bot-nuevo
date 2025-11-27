@@ -766,24 +766,6 @@ client.on('messageCreate', async (message) => {
                     await message.reply({ embeds: [errorEmbed] });
                 }
                 break;
-                    
-                } catch (error) {
-                    console.error('Error en comando vc:', error);
-                    
-                    const errorEmbed = new EmbedBuilder()
-                        .setTitle('❌ Error de Voz')
-                        .setDescription('Ocurrió un error ejecutando el comando de voz')
-                        .addFields(
-                            { name: '🚨 Error', value: error.message, inline: false },
-                            { name: '🔧 Soluciones', value: '• Verificar permisos de voz\n• Reactivar el bot en Railway\n• Comprobar configuración', inline: false }
-                        )
-                        .setColor('#ff0000')
-                        .setFooter({ text: 'Community Stealth | Soporte técnico' })
-                        .setTimestamp();
-                    
-                    await message.reply({ embeds: [errorEmbed] });
-                }
-                break;
                 
             case 'info':
                 const totalMembers = getTotalMemberCount(client);
