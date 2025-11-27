@@ -19,13 +19,13 @@ const branch = process.env.REPO_TARGET_BRANCH || 'main';
 const filesToUpload = [
     {
         path: 'bot.js',
-        description: 'Bot principal con comando $ai integrado con MiniMax-M2',
-        commitMessage: '🚀 Bot IA Integration: Agregado comando $ai con MiniMax-M2 Agentic capabilities'
+        description: 'Bot principal con comando $ai especializado para gaming y administración',
+        commitMessage: '🎮 Specialized AI Bot: Comando $ai especializado para gaming, anti-cheat y administración de Discord'
     },
     {
         path: 'minimax_integration.js',
-        description: 'Sistema completo de integración con MiniMax-M2 API',
-        commitMessage: '🤖 MiniMax Integration: Sistema completo de IA Agentic con Tool Calling'
+        description: 'Sistema completo de IA especializado para Discord gaming y administración',
+        commitMessage: '🎯 Gaming AI Integration: Sistema completo de IA especializado para gaming, anti-cheat y administración de servidores'
     },
     {
         path: '.env.example',
@@ -98,7 +98,8 @@ async function uploadToGitHub() {
 
         console.log('\n🎉 ¡Todos los archivos subidos exitosamente!');
         console.log('🚀 Railway debería reiniciar automáticamente en 1-2 minutos');
-        console.log('🤖 Tu bot ahora tendrá capacidades IA con MiniMax-M2!');
+        console.log('🎮 Tu bot ahora tendrá IA ESPECIALIZADA para gaming y administración!');
+        console.log('🛡️ MiniMax-M2 configurado para tareas específicas del bot');
         
     } catch (error) {
         console.error('❌ Error durante el upload:', error);
