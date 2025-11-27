@@ -1,0 +1,25 @@
+{
+  "name": "stealth-anticheatx-bot",
+  "version": "1.0.0",
+  "description": "Stealth-AntiCheatX Discord Bot with compiled anti-cheat executable",
+  "main": "bot_completo.js",
+  "scripts": {
+    "start": "node bot_completo.js",
+    "test": "node verificar_bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "anticheat",
+    "gaming"
+  ],
+  "author": "xpe.nettt",
+  "license": "MIT"
+}
