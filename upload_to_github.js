@@ -19,23 +19,23 @@ const branch = process.env.REPO_TARGET_BRANCH || 'main';
 const filesToUpload = [
     {
         path: 'bot.js',
-        description: 'Bot principal con comando $ai especializado para gaming y administración',
-        commitMessage: '🎮 Specialized AI Bot: Comando $ai especializado para gaming, anti-cheat y administración de Discord'
+        description: 'Bot principal con Stealth-CheatX AI especializado únicamente para anti-cheat',
+        commitMessage: '🛡️ Stealth-CheatX: IA especializada únicamente para análisis anti-cheat, detección de exploits y seguridad'
     },
     {
-        path: 'minimax_integration.js',
-        description: 'Sistema completo de IA especializado para Discord gaming y administración',
-        commitMessage: '🎯 Gaming AI Integration: Sistema completo de IA especializado para gaming, anti-cheat y administración de servidores'
+        path: 'stealth_cheatx_ai.js',
+        description: 'Stealth-CheatX AI - Sistema completo de IA especializado para anti-cheat',
+        commitMessage: '🎯 Stealth-CheatX AI: IA especializada para detección de cheats, análisis de patrones y seguridad gaming'
     },
     {
         path: '.env.example',
-        description: 'Configuración completa de variables de entorno incluyendo MiniMax',
-        commitMessage: '⚙️ Environment Config: Agregada configuración completa de MiniMax API'
+        description: 'Configuración completa de variables de entorno para Stealth-CheatX',
+        commitMessage: '⚙️ Environment Config: Configuración completa para Stealth-CheatX AI'
     },
     {
         path: 'minimax_config.env',
-        description: 'Configuración específica de MiniMax API',
-        commitMessage: '🔧 MiniMax Config: Variables de entorno específicas para IA'
+        description: 'Configuración específica de MiniMax API para Stealth-CheatX',
+        commitMessage: '🔧 MiniMax Config: Variables específicas para Stealth-CheatX AI'
     }
 ];
 
@@ -98,8 +98,8 @@ async function uploadToGitHub() {
 
         console.log('\n🎉 ¡Todos los archivos subidos exitosamente!');
         console.log('🚀 Railway debería reiniciar automáticamente en 1-2 minutos');
-        console.log('🎮 Tu bot ahora tendrá IA ESPECIALIZADA para gaming y administración!');
-        console.log('🛡️ MiniMax-M2 configurado para tareas específicas del bot');
+        console.log('🛡️ Stealth-CheatX AI especializado únicamente para anti-cheat!');
+        console.log('🎯 MiniMax-M2 configurado para detección y análisis de cheats');
         
     } catch (error) {
         console.error('❌ Error durante el upload:', error);
