@@ -1,22 +1,16 @@
 {
   "name": "stealth-discord-bot",
   "version": "2.0.0",
-  "description": "Bot avanzado de Discord con análisis anti-cheat y canales específicos",
-  "main": "bot_completo.js",
+  "description": "Bot avanzado de Discord con capacidades anti-cheat",
+  "main": "bot.js",
   "scripts": {
-    "start": "node bot_completo.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5"
   },
-  "keywords": [
-    "anti-cheat",
-    "discord",
-    "community-stealth",
-    "monitoring",
-    "advanced-bot"
-  ],
-  "author": "xpe.nettt",
+  "keywords": ["discord", "bot", "anti-cheat", "gaming"],
+  "author": "MiniMax Agent",
   "license": "MIT"
 }
