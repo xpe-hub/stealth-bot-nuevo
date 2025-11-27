@@ -10,8 +10,8 @@ const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('
 const fs = require('fs');
 const path = require('path');
 
-// MiniMax AI Integration
-const { minimaxChat, processMinimaxResponse, executeDiscordTool } = require('./minimax_integration');
+// Stealth-CheatX AI Integration - Anti-Cheat Specialist
+const { stealthCheatXChat, processStealthCheatXResponse, executeAntiCheatTool } = require('./stealth_cheatx_ai');
 
 // Configuración del bot
 const client = new Client({
@@ -503,7 +503,7 @@ client.on('messageCreate', async (message) => {
                     .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
                     .setColor('#00ff00')
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}ai [mensaje]\` - IA MiniMax-M2\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
+                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}ai [mensaje]\` - Stealth-CheatX IA\n\`${BOT_PREFIX}canales\` - Ver todos los canales`, inline: true },
                         { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
                         { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
                         { name: '🔐 Sistema de Permisos', value: `\`${BOT_PREFIX}dev approve approve [ID]\` - Aprobar auto-actualización\n\`${BOT_PREFIX}dev approve yes [ID]\` - Aprobar (alternativa)\n\`${BOT_PREFIX}dev approve deny [ID]\` - Rechazar auto-actualización\n\`${BOT_PREFIX}dev approve no [ID]\` - Rechazar (alternativa)\n\`${BOT_PREFIX}dev pending\` - Ver métodos pendientes`, inline: true },
@@ -1382,7 +1382,7 @@ con el verdadero StealthAntiCheatX.exe`;
                 break;
                 
             case 'ai':
-            case 'minimax':
+            case 'stealth':
                 if (!process.env.MINIMAX_API_KEY) {
                     return message.reply('❌ API key de MiniMax no configurada. Contacta al desarrollador.');
                 }
@@ -1392,51 +1392,58 @@ con el verdadero StealthAntiCheatX.exe`;
                 }
                 
                 try {
-                    // Obtener contexto del servidor
-                    const serverContext = {
-                        name: message.guild.name,
-                        memberCount: message.guild.memberCount,
-                        ownerId: message.guild.ownerId,
-                        voiceChannels: message.guild.channels.cache.filter(c => c.type === 2).size,
-                        textChannels: message.guild.channels.cache.filter(c => c.type === 0).size,
-                        roles: message.guild.roles.cache.size,
-                        user: {
-                            id: message.author.id,
-                            username: message.author.username,
-                            tag: message.author.tag,
-                            isOwner: message.author.id === BOT_OWNER_ID,
-                            isBot: message.author.bot
+                    // Obtener contexto específico para anti-cheat
+                    const anticheatContext = {
+                        guild: {
+                            name: message.guild.name,
+                            memberCount: message.guild.memberCount,
+                            channels: {
+                                total: message.guild.channels.cache.size,
+                                text: message.guild.channels.cache.filter(c => c.type === 0).size,
+                                voice: message.guild.channels.cache.filter(c => c.type === 2).size
+                            }
                         },
-                        timestamp: new Date().toISOString()
+                        request: {
+                            user: message.author.tag,
+                            userId: message.author.id,
+                            channelId: message.channel.id,
+                            timestamp: new Date().toISOString(),
+                            messageContent: message.content
+                        },
+                        antiCheatStatus: {
+                            monitoringActive: true,
+                            patternsLoaded: 12,
+                            threatLevel: 'OPERATIONAL'
+                        }
                     };
 
-                    const userMessage = args.join(' ') || 'Hola, ¿en qué puedo ayudarte?';
-                    console.log(`🤖 [AI] ${message.author.tag} en ${message.guild.name}: ${userMessage}`);
+                    const userMessage = args.join(' ') || 'Analiza el estado de seguridad actual';
+                    console.log(`🛡️ [Stealth-CheatX] ${message.author.tag} en ${message.guild.name}: ${userMessage}`);
                     
-                    // Respuesta inicial
-                    const loadingMessage = await message.reply('🤖 *Pensando con MiniMax-M2...*');
+                    // Respuesta inicial específica de anti-cheat
+                    const loadingMessage = await message.reply('🛡️ *Stealth-CheatX analizando...*');
                     
-                    // Obtener respuesta de MiniMax
-                    const minimaxResponse = await minimaxChat(userMessage, serverContext);
+                    // Obtener respuesta de Stealth-CheatX
+                    const cheatXResponse = await stealthCheatXChat(userMessage, anticheatContext);
                     
-                    if (!minimaxResponse) {
-                        await loadingMessage.edit('❌ Error al conectar con MiniMax API. Intenta de nuevo en un momento.');
+                    if (!cheatXResponse) {
+                        await loadingMessage.edit('❌ Error en sistema Stealth-CheatX. Contacta al desarrollador.');
                         return;
                     }
                     
-                    // Procesar respuesta y ejecutar herramientas
-                    const finalResponse = await processMinimaxResponse(minimaxResponse, message.guild, message);
+                    // Procesar respuesta específica de anti-cheat
+                    const finalResponse = await processStealthCheatXResponse(cheatXResponse, message.guild, message);
                     
                     // Mostrar respuesta al usuario
                     if (finalResponse && finalResponse.trim()) {
-                        await loadingMessage.edit(`🤖 **MiniMax-M2:**\n${finalResponse}`);
+                        await loadingMessage.edit(`🛡️ **Stealth-CheatX:**\n${finalResponse}`);
                     } else {
-                        await loadingMessage.edit('✅ Herramientas ejecutadas. Consulta los resultados arriba.');
+                        await loadingMessage.edit('🛡️ **Análisis completado.** Consulte los resultados de herramientas arriba.');
                     }
                     
                 } catch (error) {
-                    console.error('Error en comando AI:', error);
-                    await message.reply('❌ Error interno del sistema AI. Contacta al desarrollador.');
+                    console.error('Error en Stealth-CheatX:', error);
+                    await message.reply('❌ Error en sistema Stealth-CheatX. Contacta al desarrollador.');
                 }
                 break;
 
