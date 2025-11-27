@@ -296,6 +296,7 @@ client.on('messageCreate', async (message) => {
                         
                         await message.reply({ embeds: [voiceEmbed] });
                     } else {
+                        const guild = message.guild;
                         const voiceEmbed = new EmbedBuilder()
                             .setTitle('🎤 Canales de Voz Disponibles')
                             .setDescription('Canales de voz disponibles en este servidor:')
@@ -386,9 +387,10 @@ client.on('messageCreate', async (message) => {
                             .setColor('#ff0000')
                             .addFields(
                                 { name: '🔧 Posibles Soluciones', value: '• Verificar permisos de voz\n• El canal puede estar lleno\n• El bot puede estar en cooldown', inline: false },
-                                { name: '📞 Contacto', value: 'Si persiste el error, contacta al administrador', inline: false }
+                                { name: '📞 Contacto', value: 'Si persiste el error, contacta al administrador', inline: false },
+                                { name: '💡 Debug', value: `Error específico: ${voiceError.message}`, inline: false }
                             )
-                            .setFooter({ text: 'Error: ' + voiceError.message })
+                            .setFooter({ text: 'Community Stealth | xpe.nettt' })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [errorEmbed] });
