@@ -1,7 +1,7 @@
 // ========================================================
-// BOT ACTUALIZADO - FORZANDO REDEPLOY - 2025-11-27 16:03:06
-// Corrección de comando $vc para unir bot a canales de voz
-// Railway deploy automático - Cambio forzado #2
+// BOT SIMPLIFICADO - 2025-11-27 16:04:23
+// Comandos de voz simplificados: $vc y $vc random
+// Preparado para IA con MiniMax API
 // ========================================================
 
 require('dotenv').config();
@@ -593,14 +593,14 @@ client.on('messageCreate', async (message) => {
                 }
                 
                 try {
-                    // PASO 1: Escanear todos los canales de voz del servidor
+                    // PASO 1: Escanear canales de voz accesibles
                     const voiceChannels = message.guild.channels.cache.filter(channel => 
                         channel.type === 2 && // GUILD_VOICE
                         channel.name && 
                         !channel.name.toLowerCase().includes('afk')
                     );
                     
-                    // PASO 2: Filtrar canales accesibles para el bot
+                    // PASO 2: Obtener canales donde el bot puede conectarse
                     const accessibleChannels = [];
                     for (const [id, channel] of voiceChannels) {
                         try {
@@ -609,7 +609,8 @@ client.on('messageCreate', async (message) => {
                                 accessibleChannels.push({
                                     id: id,
                                     name: channel.name,
-                                    members: channel.members.size
+                                    members: channel.members.size,
+                                    channel: channel
                                 });
                             }
                         } catch (error) {
@@ -617,18 +618,15 @@ client.on('messageCreate', async (message) => {
                         }
                     }
                     
-                    // Ordenar por cantidad de usuarios (más populares primero)
-                    accessibleChannels.sort((a, b) => b.members - a.members);
-                    
                     // CASO 1: Usuario está en un canal de voz - UNIRSE AUTOMÁTICAMENTE
                     const userVoiceChannel = message.member.voice.channel;
                     if (userVoiceChannel) {
                         const targetChannel = voiceChannels.get(userVoiceChannel.id);
                         if (targetChannel) {
-                            // Verificar que podemos unirnos
+                            // Verificar permisos
                             const permissions = targetChannel.permissionsFor(message.guild.members.me);
                             if (permissions && permissions.has('Connect')) {
-                                // Desconectar si ya estamos en algún canal
+                                // Desconectar si ya estamos en otro canal
                                 if (message.guild.members.me.voice.channel) {
                                     await message.guild.members.me.voice.disconnect();
                                 }
@@ -637,126 +635,92 @@ client.on('messageCreate', async (message) => {
                                 await message.guild.members.me.voice.setChannel(targetChannel.id);
                                 
                                 const autoEmbed = new EmbedBuilder()
-                                    .setTitle('🎤 ¡Unión Automática Exitosa!')
-                                    .setDescription(`El bot se ha unido a tu canal **${targetChannel.name}**`)
+                                    .setTitle('🎤 ¡Unión Automática!')
+                                    .setDescription(`Bot unido a **${targetChannel.name}**`)
                                     .setColor('#00ff00')
                                     .addFields(
-                                        { name: '🔗 Canal ID', value: targetChannel.id, inline: true },
                                         { name: '👥 Usuarios', value: `${targetChannel.members.size}`, inline: true },
-                                        { name: '📢 Estado', value: 'Monitoreo de audio activo', inline: true }
+                                        { name: '📢 Estado', value: 'Monitoreo activo', inline: true }
                                     )
-                                    .setFooter({ text: 'Community Stealth | Auto-detección activa' })
+                                    .setFooter({ text: 'Community Stealth' })
                                     .setTimestamp();
                                 
                                 await message.reply({ embeds: [autoEmbed] });
                                 return;
-                            } else {
-                                return message.reply('❌ El bot no tiene permisos para unirse a tu canal.');
                             }
                         }
                     }
                     
-                    // CASO 2: Sin argumentos - mostrar canales disponibles
+                    // CASO 2: Comando con argumentos
                     if (args.length === 0) {
-                        if (accessibleChannels.length === 0) {
-                            const noPermsEmbed = new EmbedBuilder()
-                                .setTitle('❌ Sin Permisos de Voz')
-                                .setDescription('El bot no puede acceder a ningún canal de voz')
-                                .addFields(
-                                    { name: '🔧 Solución', value: 'Dale permisos de CONECTAR al rol del bot en los canales de voz', inline: false }
-                                )
-                                .setColor('#ff0000')
-                                .setFooter({ text: 'Community Stealth | Configuración requerida' })
-                                .setTimestamp();
-                            
-                            await message.reply({ embeds: [noPermsEmbed] });
-                            return;
-                        }
-                        
-                        const channelsList = accessibleChannels.slice(0, 6).map(channel => 
-                            `✅ **${channel.name}** (${channel.members} usuarios)`
-                        ).join('\n');
-                        
-                        const quickCommands = accessibleChannels.slice(0, 3).map(channel => 
-                            `\`${BOT_PREFIX}vc ${channel.name}\``
-                        ).join('\n');
-                        
-                        const listEmbed = new EmbedBuilder()
-                            .setTitle('🎤 Canales de Voz Disponibles')
-                            .setDescription(`${accessibleChannels.length} canales accesibles para el bot`)
+                        // Sin argumentos y usuario no en canal - mostrar mensaje de uso
+                        const helpEmbed = new EmbedBuilder()
+                            .setTitle('🎤 Comandos de Voz')
+                            .setDescription('Comandos disponibles para conectar el bot a canales de voz')
                             .setColor('#00ff00')
                             .addFields(
-                                { name: '✅ Canales Disponibles', value: channelsList, inline: true },
-                                { name: '🎲 Opciones Rápidas', value: `\`${BOT_PREFIX}vc random\` - Aleatorio\n\`${BOT_PREFIX}vc auto\` - Inteligente`, inline: true },
-                                { name: '⚡ Canales Específicos', value: quickCommands || 'Especifica con `$vc [nombre]`', inline: false }
+                                { name: '🔗 Unión Automática', value: `\`${BOT_PREFIX}vc\` - Únete a un canal para que el bot se una automáticamente`, inline: false },
+                                { name: '🎲 Aleatorio', value: `\`${BOT_PREFIX}vc random\` - Bot se une a un canal aleatorio`, inline: false }
                             )
-                            .setFooter({ text: 'Community Stealth | Bot de Voz Inteligente' })
+                            .setFooter({ text: 'Community Stealth | Bot de Voz Simplificado' })
                             .setTimestamp();
                         
-                        await message.reply({ embeds: [listEmbed] });
+                        await message.reply({ embeds: [helpEmbed] });
                         return;
                     }
                     
-                    // CASO 3: Con argumentos - opciones inteligentes o canal específico
+                    // CASO 3: Comando con argumentos
                     const input = args.join(' ').toLowerCase().trim();
-                    let targetChannel = null;
-                    let method = 'Específico';
                     
                     if (input === 'random' || input === 'aleatorio') {
+                        // Unirnos a un canal aleatorio (preferir canales con usuarios)
                         if (accessibleChannels.length === 0) {
-                            return message.reply('❌ No hay canales accesibles para unirnos aleatoriamente.');
+                            return message.reply('❌ No hay canales accesibles para unirse aleatoriamente.');
                         }
                         
-                        const randomIndex = Math.floor(Math.random() * accessibleChannels.length);
-                        targetChannel = accessibleChannels[randomIndex];
-                        method = 'Aleatorio';
+                        // Priorizar canales con usuarios
+                        const channelsWithUsers = accessibleChannels.filter(ch => ch.members > 0);
+                        const availableChannels = channelsWithUsers.length > 0 ? channelsWithUsers : accessibleChannels;
                         
-                    } else if (input === 'auto' || input === 'automático') {
-                        if (accessibleChannels.length === 0) {
-                            return message.reply('❌ No hay canales accesibles.');
+                        const randomIndex = Math.floor(Math.random() * availableChannels.length);
+                        const targetChannel = availableChannels[randomIndex];
+                        
+                        // Desconectar si ya estamos en otro canal
+                        if (message.guild.members.me.voice.channel) {
+                            await message.guild.members.me.voice.disconnect();
                         }
                         
-                        // Buscar canal con usuarios activos, si no usar el más popular
-                        const activeChannels = accessibleChannels.filter(ch => ch.members >= 1);
-                        targetChannel = activeChannels.length > 0 ? activeChannels[0] : accessibleChannels[0];
-                        method = 'Automático';
+                        // Unirnos al canal seleccionado
+                        await message.guild.members.me.voice.setChannel(targetChannel.id);
                         
-                    } else {
-                        // Buscar canal por nombre específico
-                        targetChannel = voiceChannels.find(channel => 
-                            channel.name.toLowerCase().includes(input)
-                        );
+                        const randomEmbed = new EmbedBuilder()
+                            .setTitle('🎲 ¡Unión Aleatoria!')
+                            .setDescription(`Bot se ha unido a **${targetChannel.name}**`)
+                            .setColor('#00ff00')
+                            .addFields(
+                                { name: '👥 Usuarios', value: `${targetChannel.members}`, inline: true },
+                                { name: '🎯 Método', value: 'Aleatorio', inline: true }
+                            )
+                            .setFooter({ text: 'Community Stealth' })
+                            .setTimestamp();
                         
-                        if (targetChannel) {
-                            // Verificar si podemos acceder
-                            const permissions = targetChannel.permissionsFor(message.guild.members.me);
-                            if (!permissions || !permissions.has('Connect')) {
-                                return message.reply('❌ El bot no puede acceder al canal que especificaste.');
-                            }
-                            
-                            targetChannel = {
-                                id: targetChannel.id,
-                                name: targetChannel.name,
-                                members: targetChannel.members.size
-                            };
-                        } else {
-                            // Canal no encontrado - mostrar alternativas
-                            const availableChannels = accessibleChannels.slice(0, 5).map(ch => 
-                                `• **${ch.name}** (${ch.members} usuarios)`
-                            ).join('\n');
-                            
-                            const notFoundEmbed = new EmbedBuilder()
-                                .setTitle('❌ Canal No Encontrado')
-                                .setDescription(`No se encontró un canal que contenga "${args.join(' ')}"`)
-                                .setColor('#ff0000')
-                                .addFields(
-                                    { 
-                                        name: '🎯 Opciones Disponibles', 
-                                        value: `\`${BOT_PREFIX}vc random\` - Canal aleatorio\n\`${BOT_PREFIX}vc auto\` - Canal inteligente`, 
-                                        inline: false 
-                                    },
-                                    { 
-                                        name: `📋 Canales (${accessibleChannels.length})`, 
+                        await message.reply({ embeds: [randomEmbed] });
+                        return;
+                    }
+                    
+                    // Argumento no reconocido
+                    const unknownEmbed = new EmbedBuilder()
+                        .setTitle('❌ Comando Desconocido')
+                        .setDescription(`La opción "${args.join(' ')}" no es válida`)
+                        .setColor('#ff0000')
+                        .addFields(
+                            { name: '💡 Comandos Disponibles', value: `\`${BOT_PREFIX}vc\` - Unión automática\n\`${BOT_PREFIX}vc random\` - Canal aleatorio`, inline: false }
+                        )
+                        .setFooter({ text: 'Community Stealth | Bot Simplificado' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [unknownEmbed] });
+                    return; 
                                         value: availableChannels || 'Sin canales accesibles', 
                                         inline: false 
                                     }
