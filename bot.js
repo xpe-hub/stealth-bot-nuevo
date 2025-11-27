@@ -607,7 +607,7 @@ client.on('messageCreate', async (message) => {
                             .setDescription('Canales de voz disponibles en este servidor:')
                             .setColor('#ff9900')
                             .addFields(
-                                { name: '📋 Lista de Canales', value: guild.voiceChannels.map(channel => channel.name).slice(0, 10).join('\n') || 'No hay canales de voz disponibles', inline: false },
+                                { name: '📋 Lista de Canales', value: message.guild.channels.cache.filter(channel => channel.type === 2).map(channel => channel.name).slice(0, 10).join('\n') || 'No hay canales de voz disponibles', inline: false },
                                 { name: '💡 Uso', value: `\`${BOT_PREFIX}vc [nombre del canal]\``, inline: false }
                             )
                             .setFooter({ text: 'Community Stealth | xpe.nettt' })
@@ -618,10 +618,9 @@ client.on('messageCreate', async (message) => {
                 } else {
                     // Unirse al canal especificado (VERSIÓN CORREGIDA)
                     const channelName = args.join(' ');
-                    const guild = message.guild;
                     
                     // Buscar canal de voz por nombre
-                    const voiceChannel = guild.channels.cache.find(channel => 
+                    const voiceChannel = message.guild.channels.cache.find(channel => 
                         channel.type === 2 && // GUILD_VOICE
                         channel.name.toLowerCase().includes(channelName.toLowerCase())
                     );
@@ -632,7 +631,7 @@ client.on('messageCreate', async (message) => {
                             .setDescription(`No se encontró un canal de voz con el nombre "${channelName}"`)
                             .setColor('#ff0000')
                             .addFields(
-                                { name: '🔍 Canales Disponibles', value: guild.voiceChannels.map(ch => ch.name).slice(0, 5).join('\n') || 'No hay canales de voz', inline: false },
+                                { name: '🔍 Canales Disponibles', value: message.guild.channels.cache.filter(channel => channel.type === 2).map(ch => ch.name).slice(0, 5).join('\n') || 'No hay canales de voz', inline: false },
                                 { name: '💡 Sugerencia', value: `Usa un nombre más específico o verifica el nombre exacto.`, inline: false }
                             )
                             .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
