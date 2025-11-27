@@ -111,6 +111,219 @@ function performThreatAnalysis() {
     return threats;
 }
 
+// Función para auto-actualizar el repositorio de GitHub
+async function updateAntiCheatRepository(method) {
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_REPO_OWNER = process.env.GITHUB_REPO_OWNER || 'xpe-hub';
+    const GITHUB_REPO_NAME = process.env.GITHUB_REPO_NAME || 'stealth-bot-nuevo';
+    const REPO_TARGET_BRANCH = process.env.REPO_TARGET_BRANCH || 'main';
+    
+    if (!GITHUB_TOKEN) {
+        throw new Error('GITHUB_TOKEN no está configurado');
+    }
+    
+    try {
+        // 1. Obtener el contenido actual del archivo bot.js
+        const getCurrentFileUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/bot.js`;
+        const getCurrentFileResponse = await fetch(getCurrentFileUrl, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Stealth-AntiCheat-Bot'
+            }
+        });
+        
+        if (!getCurrentFileResponse.ok) {
+            throw new Error(`Error al obtener archivo actual: ${getCurrentFileResponse.status} ${getCurrentFileResponse.statusText}`);
+        }
+        
+        const currentFileData = await getCurrentFileResponse.json();
+        const currentContent = Buffer.from(currentFileData.content, 'base64').toString('utf-8');
+        
+        // 2. Añadir el nuevo método de detección
+        const patternCode = `
+    // Método ID: ${method.id} - ${method.method}
+    // Detectado: ${new Date(method.timestamp).toLocaleString()}
+    // Patrón: ${method.pattern}
+    if (message.content.match(/${method.pattern}/i)) {
+        console.log('🚨 CHEAT DETECTADO - Método ${method.id}:', method.method);
+        
+        await reportToDiscoveryChannels(client, {
+            id: ${method.id},
+            method: '${method.method}',
+            pattern: '${method.pattern}',
+            user: message.author.tag,
+            userId: message.author.id,
+            guildId: message.guild.id,
+            channelId: message.channel.id,
+            messageId: message.id,
+            timestamp: new Date().toISOString(),
+            severity: 'ALTA',
+            type: 'CHEAT_DETECTED'
+        });
+        
+        return true;
+    }`;
+        
+        // 3. Insertar el patrón en la función de detección (antes del último else)
+        const detectionFunctionStart = currentContent.indexOf('// Función principal de detección');
+        const detectionFunctionEnd = currentContent.indexOf('// Si ningún patrón coincide');
+        
+        if (detectionFunctionStart === -1 || detectionFunctionEnd === -1) {
+            throw new Error('No se pudo encontrar la función de detección en el archivo');
+        }
+        
+        // Buscar el final de la función de detección antes del último else
+        const beforeLastElse = currentContent.substring(0, detectionFunctionEnd);
+        const afterLastElse = currentContent.substring(detectionFunctionEnd);
+        
+        const newContent = beforeLastElse + patternCode + '\n' + afterLastElse;
+        
+        // 4. Crear el commit
+        const commitMessage = `🤖 Auto-Update: Añadir detección de cheat - Método ${method.id}\n\n` +
+            `Método: ${method.method}\n` +
+            `Patrón: ${method.pattern}\n` +
+            `Detectado por: ${method.user} (${method.userId})\n` +
+            `Servidor: ${method.guildId}\n` +
+            `Fecha: ${new Date(method.timestamp).toLocaleString()}\n` +
+            `\n🤖 Actualización automática autorizada por desarrollador`;
+        
+        // 5. Actualizar el archivo en GitHub
+        const updateFileUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/bot.js`;
+        const updateFileData = {
+            message: commitMessage,
+            content: Buffer.from(newContent, 'utf-8').toString('base64'),
+            sha: currentFileData.sha,
+            branch: REPO_TARGET_BRANCH
+        };
+        
+        const updateFileResponse = await fetch(updateFileUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Stealth-AntiCheat-Bot'
+            },
+            body: JSON.stringify(updateFileData)
+        });
+        
+        if (!updateFileResponse.ok) {
+            const errorText = await updateFileResponse.text();
+            throw new Error(`Error al actualizar archivo: ${updateFileResponse.status} ${updateFileResponse.statusText} - ${errorText}`);
+        }
+        
+        const updateResult = await updateFileResponse.json();
+        console.log('✅ Repositorio actualizado exitosamente:', updateResult.commit.sha);
+        
+        return {
+            success: true,
+            commitSha: updateResult.commit.sha,
+            commitUrl: updateResult.commit.html_url,
+            message: 'Repositorio actualizado exitosamente'
+        };
+        
+    } catch (error) {
+        console.error('❌ Error en auto-actualización:', error);
+        throw error;
+    }
+}
+
+// Array para almacenar métodos descubiertos (simula base de datos)
+const discoveredMethods = [];
+
+// Función para reportar a canales de descubrimiento
+async function reportToDiscoveryChannels(client, methodData) {
+    try {
+        // Agregar método a la lista de descubiertos
+        const method = {
+            id: discoveredMethods.length + 1,
+            ...methodData,
+            status: 'PENDING_ANALYSIS',
+            timestamp: new Date().toISOString(),
+            discoveredBy: 'automatic_detection'
+        };
+        
+        discoveredMethods.push(method);
+        
+        // Enviar reporte a canal de descubrimientos
+        const discoveryChannel = client.channels.cache.get(DESCUBRIMIENTOS_CHANNEL_ID);
+        if (discoveryChannel) {
+            const discoveryEmbed = new EmbedBuilder()
+                .setTitle('🔍 NUEVO CHEAT DETECTADO')
+                .setDescription('**Análisis automático completado**')
+                .addFields(
+                    { name: '🔧 Método', value: method.method, inline: false },
+                    { name: '👤 Usuario', value: `${methodData.user} (${methodData.userId})`, inline: true },
+                    { name: '🏠 Servidor', value: methodData.guildId, inline: true },
+                    { name: '📊 Patrón', value: `\`${methodData.pattern}\``, inline: false },
+                    { name: '⚡ Severidad', value: methodData.severity, inline: true },
+                    { name: '⏰ Detectado', value: new Date(methodData.timestamp).toLocaleString(), inline: true },
+                    { name: '🆔 Método ID', value: `#${method.id}`, inline: true }
+                )
+                .setColor('#ff6600')
+                .setFooter({ text: '🤖 Sistema de Detección Automática | Stealth-AntiCheat' })
+                .setTimestamp();
+            
+            await discoveryChannel.send({ embeds: [discoveryEmbed] });
+        }
+        
+        // ENVIAR CONSULTA AUTOMÁTICA A DESARROLLADORES
+        await sendDeveloperConsultation(client, method);
+        
+        console.log(`✅ Método ${method.id} reportado y consulta enviada a desarrolladores`);
+        
+    } catch (error) {
+        console.error('Error en reportToDiscoveryChannels:', error);
+    }
+}
+
+// Función para enviar consulta automática a desarrolladores
+async function sendDeveloperConsultation(client, method) {
+    try {
+        const implementationChannel = client.channels.cache.get(IMPLEMENTACIONES_CHANNEL_ID);
+        if (!implementationChannel) {
+            console.log('❌ Canal de implementaciones no encontrado');
+            return;
+        }
+        
+        // Mencionar desarrolladores
+        const developerMentions = `<@${BOT_OWNER_ID}>`;
+        
+        const consultationEmbed = new EmbedBuilder()
+            .setTitle('💬 CONSULTA AUTOMÁTICA A DESARROLLADORES')
+            .setDescription(`**CHEAT DETECTADO - ESPERANDO PERMISO** ${developerMentions}`)
+            .addFields(
+                { name: '🤖 PREGUNTA DEL BOT', value: '¿Puedo implementar la detección de este cheat en Stealth-AntiCheatX?\n¿Pueden compilar el EXE actualizado y enviarlo?' },
+                { name: '🔧 Método', value: method.method, inline: false },
+                { name: '📊 Patrón Detectado', value: `\`${method.pattern}\``, inline: false },
+                { name: '👤 Usuario Sospechoso', value: `${method.user}`, inline: true },
+                { name: '⚡ Severidad', value: method.severity, inline: true },
+                { name: '🆔 Método ID', value: `#${method.id}`, inline: true },
+                { name: '⏰ Tiempo', value: new Date(method.timestamp).toLocaleString(), inline: true }
+            )
+            .addFields(
+                { name: '📋 COMANDOS DISPONIBLES', value: '`$dev approve approve ' + method.id + '` - Aprobar auto-actualización\n`$dev approve deny ' + method.id + '` - Denegar auto-actualización\n`$dev pending` - Ver métodos pendientes', inline: false }
+            )
+            .setColor('#ffaa00')
+            .setFooter({ text: '🤖 ESPERANDO AUTORIZACIÓN DE DESARROLLADORES 🤖' })
+            .setTimestamp();
+        
+        await implementationChannel.send({ 
+            content: developerMentions,
+            embeds: [consultationEmbed] 
+        });
+        
+        // Cambiar estado del método a AWAITING_PERMISSION
+        method.status = 'AWAITING_PERMISSION';
+        
+        console.log(`📤 Consulta enviada para método ${method.id}`);
+        
+    } catch (error) {
+        console.error('Error enviando consulta a desarrolladores:', error);
+    }
+}
+
 // Evento: Bot listo
 client.once('ready', () => {
     console.log('🤖 Stealth-AntiCheat-bot está listo!');
@@ -151,6 +364,89 @@ client.once('ready', () => {
     }
 });
 
+// Función para detectar patrones de cheats
+async function detectCheatPatterns(client, message) {
+    try {
+        const content = message.content.toLowerCase().trim();
+        
+        // Patrones de detección de cheats (actualizados constantemente)
+        const cheatPatterns = [
+            // DLL Injection
+            { pattern: /dll\s*injection|inject\s+dll|manualmap|loadlibrary|dll\s*inject/, method: 'DLL Injection Detectado' },
+            { pattern: /createthread|remotethread|writeprocessmemory/, method: 'Memory Manipulation' },
+            
+            // Memory Hacks
+            { pattern: /memory\s*hack|ram\s*hack|ramhack|memory\s*editor/, method: 'Memory Hacking Tool' },
+            { pattern: /ce\s*table|cheat\s*engine|process\s*hacker/, method: 'Memory Editing Software' },
+            { pattern: /write\s*memory|read\s*memory|modify\s*memory/, method: 'Memory Modification' },
+            
+            // ESP/Aimbot
+            { pattern: /esp\s*hack|wallhack|see\s*through\s*walls/, method: 'ESP Wallhack' },
+            { pattern: /aim\s*bot|aimbot|auto\s*aim|predictive\s*aim/, method: 'Aimbot Detection' },
+            { pattern: /no\s*spread|perfect\s*accuracy|instant\s*kill/, method: 'Combat Modifications' },
+            
+            // Speed/Time Hacks
+            { pattern: /speed\s*hack|speedhack|time\s*warp|faster\s*game/, method: 'Speed Manipulation' },
+            { pattern: /freeze\s*time|pause\s*game|slow\s*motion/, method: 'Time Manipulation' },
+            
+            // Teleport/Position
+            { pattern: /teleport|teleport\s*hack| warp\s*position|fly\s*hack/, method: 'Position Teleportation' },
+            { pattern: /noclip|fly\s*mode|ghost\s*mode|invisible\s*mode/, method: 'Movement Bypass' },
+            
+            // Triggerbot/Auto-fire
+            { pattern: /trigger\s*bot|triggerbot|auto\s*fire|auto\s*shoot/, method: 'Triggerbot Detection' },
+            { pattern: /auto\s*clicker|rapid\s*fire|hold\s*to\s*fire/, method: 'Auto-fire Modification' },
+            
+            // Item/Resource Hacks
+            { pattern: /item\s*spawn|item\s*hack|infinite\s*items/, method: 'Item Generation Hack' },
+            { pattern: /money\s*hack|coin\s*hack|credits\s*hack/, method: 'Resource Manipulation' },
+            { pattern: /experience\s*hack|xp\s*hack|level\s*up/, method: 'Experience Manipulation' },
+            
+            // Bypass/Security
+            { pattern: /anti\s*cheat\s*bypass|bypass\s*anticheat|disabled\s*security/, method: 'Anti-cheat Bypass' },
+            { pattern: /vac\s*bypass|easypass|nocd\s*crack/, method: 'Security Bypass' },
+            { pattern: /detect\s*proof|undetectable\s*hack/, method: 'Stealth Mode' },
+            
+            // Download/Links
+            { pattern: /download.*hack|dl\s*hack|get\s*hack|free\s*hack/, method: 'Hack Distribution' },
+            { pattern: /mega\.nz|mediafire.*hack|dropbox.*hack/, method: 'Hack Download Links' },
+            
+            // General Terms
+            { pattern: /cheat\s*code|hack\s*tool|game\s*hack|game\s*cheat/, method: 'Generic Cheat Tool' },
+            { pattern: /modded|mod.*game|game\s*mod/, method: 'Game Modification' },
+            { pattern: /server\s*hack|game\s*server\s*attack/, method: 'Server Attack Tool' }
+        ];
+        
+        // Buscar patrones coincidentes
+        for (const cheatPattern of cheatPatterns) {
+            if (cheatPattern.pattern.test(content)) {
+                console.log('🚨 CHEAT PATTERN DETECTADO:', cheatPattern.method, 'en mensaje de', message.author.tag);
+                
+                // Reportar inmediatamente a desarrolladores
+                await reportToDiscoveryChannels(client, {
+                    id: Date.now(), // ID temporal
+                    method: cheatPattern.method,
+                    pattern: cheatPattern.pattern.source,
+                    user: message.author.tag,
+                    userId: message.author.id,
+                    guildId: message.guild.id,
+                    channelId: message.channel.id,
+                    messageId: message.id,
+                    messageContent: message.content.substring(0, 200), // Primeros 200 chars
+                    timestamp: new Date().toISOString(),
+                    severity: 'ALTA',
+                    type: 'CHEAT_DETECTED'
+                });
+                
+                break; // Solo reportar el primer patrón encontrado
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error detectando patrones de cheats:', error);
+    }
+}
+
 // Evento: Nuevo mensaje
 client.on('messageCreate', async (message) => {
     // Ignorar mensajes de otros bots
@@ -178,6 +474,9 @@ client.on('messageCreate', async (message) => {
         await message.reply({ embeds: [embed] });
         return;
     }
+    
+    // DETECCIÓN AUTOMÁTICA DE CHEATS - Sistema Inteligente
+    await detectCheatPatterns(client, message);
     
     // Manejo de comandos
     if (!message.content.startsWith(BOT_PREFIX)) return;
@@ -581,7 +880,7 @@ con el verdadero StealthAntiCheatX.exe`;
                 const uptime = Math.floor(process.uptime() / 3600);
                 const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
                 const threatAnalysis = performThreatAnalysis();
-                const totalThreatsAnalysis = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
+                const totalThreats = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
                 
                 const statusEmbed = new EmbedBuilder()
                     .setTitle('📊 Estado del Bot')
@@ -593,7 +892,7 @@ con el verdadero StealthAntiCheatX.exe`;
                         { name: '💾 Memoria', value: `${memoryUsage} MB`, inline: true },
                         { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
                         { name: '👥 Usuarios', value: `${getTotalMemberCount(client)}`, inline: true },
-                        { name: '⚠️ Amenazas', value: `${totalThreatsAnalysis}`, inline: true }
+                        { name: '⚠️ Amenazas', value: `${totalThreats}`, inline: true }
                     )
                     .setFooter({ text: 'Community Stealth | xpe.nettt' })
                     .setTimestamp();
@@ -748,6 +1047,167 @@ con el verdadero StealthAntiCheatX.exe`;
                     .setTimestamp();
                 
                 await message.reply({ embeds: [devListEmbed] });
+                break;
+                
+            // Sistema de Permisos para Auto-Actualizaciones
+            case 'dev':
+                if (!isDeveloper(message.author.id)) {
+                    return message.reply('❌ Solo los desarrolladores pueden usar este comando.');
+                }
+                
+                if (args.length === 0) {
+                    const devHelpEmbed = new EmbedBuilder()
+                        .setTitle('🤖 Comandos de Desarrollador')
+                        .setDescription('Comandos disponibles para desarrolladores:')
+                        .addFields(
+                            { name: '💬 Sistema de Permisos', value: '`$dev approve approve [ID]` - Aprobar auto-actualización\n`$dev approve deny [ID]` - Denegar auto-actualización\n`$dev pending` - Ver métodos esperando autorización', inline: false },
+                            { name: '🛠️ Gestión', value: '`$dev_add [ID]` - Agregar desarrollador\n`$dev_remove [ID]` - Remover desarrollador\n`$dev_check [ID]` - Verificar permisos\n`$dev_list` - Listar desarrolladores', inline: false }
+                        )
+                        .setColor('#7289da')
+                        .setFooter({ text: 'Stealth-AntiCheat | Sistema de Permisos' })
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [devHelpEmbed] });
+                }
+                
+                const subcommand = args[0].toLowerCase();
+                
+                switch (subcommand) {
+                    case 'approve':
+                        if (args.length < 3) {
+                            return message.reply('❌ Uso: `$dev approve [approve|deny|yes|no] [ID]`');
+                        }
+                        
+                        const action = args[1].toLowerCase();
+                        const methodId = parseInt(args[2]);
+                        
+                        if (isNaN(methodId)) {
+                            return message.reply('❌ ID debe ser un número válido.');
+                        }
+                        
+                        // Buscar el método en la lista de métodos descubiertos
+                        const targetMethod = discoveredMethods.find(method => method.id === methodId);
+                        
+                        if (!targetMethod) {
+                            return message.reply(`❌ No se encontró un método con ID ${methodId}.`);
+                        }
+                        
+                        if (targetMethod.status !== 'AWAITING_PERMISSION') {
+                            return message.reply(`❌ El método ${methodId} no está esperando autorización (estado actual: ${targetMethod.status}).`);
+                        }
+                        
+                        if (action === 'approve' || action === 'yes') {
+                            // Aprobar auto-actualización
+                            targetMethod.status = 'APPROVED';
+                            targetMethod.approvedBy = message.author.id;
+                            targetMethod.approvedAt = new Date();
+                            
+                            const approveEmbed = new EmbedBuilder()
+                                .setTitle('✅ AUTO-ACTUALIZACIÓN APROBADA')
+                                .setDescription(`**Método ID: ${methodId}** - Auto-actualización autorizada`)
+                                .addFields(
+                                    { name: '🔧 Método', value: targetMethod.method, inline: false },
+                                    { name: '📊 Patrón', value: targetMethod.pattern, inline: false },
+                                    { name: '👤 Aprobado por', value: `<@${message.author.id}>`, inline: true },
+                                    { name: '⏰ Timestamp', value: targetMethod.approvedAt.toLocaleString(), inline: true }
+                                )
+                                .setColor('#00ff00')
+                                .setFooter({ text: '🤖 Iniciando auto-actualización...' })
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [approveEmbed] });
+                            
+                            // Ejecutar auto-actualización
+                            try {
+                                await updateAntiCheatRepository(targetMethod);
+                                
+                                const successEmbed = new EmbedBuilder()
+                                    .setTitle('🎉 Auto-Actualización Completada')
+                                    .setDescription(`El método ${methodId} ha sido implementado exitosamente en el repositorio Stealth-AntiCheatX`)
+                                    .setColor('#00ff00')
+                                    .setFooter({ text: '✅ Sistema actualizado y funcionando' })
+                                    .setTimestamp();
+                                
+                                await message.reply({ embeds: [successEmbed] });
+                                
+                            } catch (error) {
+                                console.error('Error en auto-actualización:', error);
+                                
+                                const errorEmbed = new EmbedBuilder()
+                                    .setTitle('❌ Error en Auto-Actualización')
+                                    .setDescription(`Error al actualizar el repositorio para el método ${methodId}`)
+                                    .addFields(
+                                        { name: '🚨 Error', value: error.message, inline: false }
+                                    )
+                                    .setColor('#ff0000')
+                                    .setFooter({ text: '🔧 Revisar logs del sistema' })
+                                    .setTimestamp();
+                                
+                                await message.reply({ embeds: [errorEmbed] });
+                            }
+                            
+                        } else if (action === 'deny' || action === 'no') {
+                            // Denegar auto-actualización
+                            targetMethod.status = 'DENIED';
+                            targetMethod.deniedBy = message.author.id;
+                            targetMethod.deniedAt = new Date();
+                            
+                            const denyEmbed = new EmbedBuilder()
+                                .setTitle('❌ AUTO-ACTUALIZACIÓN DENEGADA')
+                                .setDescription(`**Método ID: ${methodId}** - Continuando monitoreo`)
+                                .addFields(
+                                    { name: '🔧 Método', value: targetMethod.method, inline: false },
+                                    { name: '📊 Razón', value: 'Solicitud denegada. El bot continuará monitoreando.', inline: false },
+                                    { name: '👤 Denegado por', value: `<@${message.author.id}>`, inline: true },
+                                    { name: '⏰ Timestamp', value: targetMethod.deniedAt.toLocaleString(), inline: true }
+                                )
+                                .setColor('#ff9900')
+                                .setFooter({ text: '🤖 Continuando vigilancia...' })
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [denyEmbed] });
+                        } else {
+                            return message.reply('❌ Acción debe ser: `approve`, `deny`, `yes`, o `no`');
+                        }
+                        break;
+                        
+                    case 'pending':
+                        const pendingMethods = discoveredMethods.filter(method => method.status === 'AWAITING_PERMISSION');
+                        
+                        if (pendingMethods.length === 0) {
+                            return message.reply('📋 No hay métodos esperando autorización.');
+                        }
+                        
+                        const pendingList = pendingMethods.map(method => 
+                            `**ID ${method.id}**: ${method.method}\n📊 Patrón: \`${method.pattern}\`\n⏰ Detectado: ${new Date(method.timestamp).toLocaleString()}`
+                        ).join('\n\n');
+                        
+                        const pendingEmbed = new EmbedBuilder()
+                            .setTitle('⏳ Métodos Esperando Autorización')
+                            .setDescription(`${pendingMethods.length} métodos pendientes de aprobación:`)
+                            .addFields(
+                                { name: '📋 Lista de Métodos', value: pendingList.slice(0, 1800), inline: false }
+                            )
+                            .setColor('#ffaa00')
+                            .setFooter({ text: `Usa: $dev approve [approve|deny] [ID]` })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [pendingEmbed] });
+                        break;
+                        
+                    default:
+                        const unknownDevEmbed = new EmbedBuilder()
+                            .setTitle('❓ Comando no reconocido')
+                            .setDescription(`No conozco el subcomando \`${subcommand}\` para \`dev\`.`)
+                            .addFields(
+                                { name: '💡 Ayuda', value: '`$dev approve approve [ID]` - Aprobar auto-actualización\n`$dev approve deny [ID]` - Denegar auto-actualización\n`$dev pending` - Ver métodos esperando autorización', inline: false }
+                            )
+                            .setColor('#ff0000')
+                            .setFooter({ text: 'Usa: $dev (sin argumentos) para ver ayuda' })
+                            .setTimestamp();
+                        
+                        await message.reply({ embeds: [unknownDevEmbed] });
+                }
                 break;
                 
             case 'add_server':
