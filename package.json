@@ -4,7 +4,7 @@
   "description": "Bot avanzado de Discord con análisis anti-cheat y canales específicos",
   "main": "bot_completo.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot_completo.js"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
