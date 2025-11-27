@@ -587,52 +587,126 @@ client.on('messageCreate', async (message) => {
                 }
                 
                 if (args.length === 0) {
-                    // Mostrar estado de voz actual
-                    if (message.member.voice.channel) {
-                        const voiceEmbed = new EmbedBuilder()
-                            .setTitle('🎤 Canal de Voz Actual')
-                            .setDescription(`Estás conectado en: **${message.member.voice.channel.name}**`)
-                            .setColor('#00ff00')
-                            .addFields(
-                                { name: '🔗 Canal ID', value: message.member.voice.channel.id, inline: true },
-                                { name: '👥 Usuarios', value: `${message.member.voice.channel.members.size}`, inline: true }
-                            )
-                            .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
-                            .setTimestamp();
-                        
-                        await message.reply({ embeds: [voiceEmbed] });
+                    // ESCANEO AUTOMÁTICO DE CANALES DE VOZ
+                    const voiceChannels = message.guild.channels.cache.filter(channel => channel.type === 2);
+                    const userVoiceChannel = message.member.voice.channel;
+                    
+                    if (userVoiceChannel) {
+                        // Usuario está en un canal - el bot se une automáticamente
+                        try {
+                            // Desconectar del canal anterior si está en uno
+                            if (message.guild.members.me.voice.channel) {
+                                await message.guild.members.me.voice.disconnect();
+                            }
+                            
+                            // Unirse al canal del usuario
+                            await message.guild.members.me.voice.setChannel(userVoiceChannel.id);
+                            
+                            const autoJoinEmbed = new EmbedBuilder()
+                                .setTitle('🎤 Bot se unió automáticamente')
+                                .setDescription(`¡El bot se ha unido a tu canal de voz **${userVoiceChannel.name}**!`)
+                                .setColor('#00ff00')
+                                .addFields(
+                                    { name: '🔗 Canal ID', value: userVoiceChannel.id, inline: true },
+                                    { name: '👥 Usuarios', value: `${userVoiceChannel.members.size}`, inline: true },
+                                    { name: '🎧 Estado', value: 'Monitoreo de audio activo', inline: false }
+                                )
+                                .setFooter({ text: `Canal: ${userVoiceChannel.name} | Monitoreo 24/7` })
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [autoJoinEmbed] });
+                            
+                        } catch (error) {
+                            const errorEmbed = new EmbedBuilder()
+                                .setTitle('❌ Error al Unirse')
+                                .setDescription(`No se pudo unir al canal de voz.`)
+                                .addFields(
+                                    { name: '🔧 Causa', value: '• Permisos insuficientes\n• Canal lleno\n• Bot no configurado correctamente', inline: false }
+                                )
+                                .setColor('#ff0000')
+                                .setFooter({ text: 'Verifica los permisos del bot' })
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [errorEmbed] });
+                        }
                     } else {
+                        // Usuario NO está en canal - mostrar lista de canales accesibles
+                        const accessibleChannels = [];
+                        const inaccessibleChannels = [];
+                        
+                        for (const channel of voiceChannels.values()) {
+                            try {
+                                // Intentar obtener permisos del bot
+                                const permissions = channel.permissionsFor(message.guild.members.me);
+                                if (permissions && permissions.has('Connect')) {
+                                    accessibleChannels.push(`✅ ${channel.name} (${channel.members.size} usuarios)`);
+                                } else {
+                                    inaccessibleChannels.push(`❌ ${channel.name} (sin permisos)`);
+                                }
+                            } catch (error) {
+                                inaccessibleChannels.push(`❌ ${channel.name} (error de permisos)`);
+                            }
+                        }
+                        
                         const voiceEmbed = new EmbedBuilder()
-                            .setTitle('🎤 Canales de Voz Disponibles')
-                            .setDescription('Canales de voz disponibles en este servidor:')
-                            .setColor('#ff9900')
+                            .setTitle('🎤 Análisis de Canales de Voz')
+                            .setDescription('Escaneo completo del servidor completado')
+                            .setColor('#0099ff')
                             .addFields(
-                                { name: '📋 Lista de Canales', value: message.guild.channels.cache.filter(channel => channel.type === 2).map(channel => channel.name).slice(0, 10).join('\n') || 'No hay canales de voz disponibles', inline: false },
-                                { name: '💡 Uso', value: `\`${BOT_PREFIX}vc [nombre del canal]\``, inline: false }
+                                { 
+                                    name: `✅ Canales Accesibles (${accessibleChannels.length})`, 
+                                    value: accessibleChannels.length > 0 ? accessibleChannels.slice(0, 10).join('\n') : 'No hay canales accesibles', 
+                                    inline: true 
+                                },
+                                { 
+                                    name: `❌ Sin Acceso (${inaccessibleChannels.length})`, 
+                                    value: inaccessibleChannels.length > 0 ? inaccessibleChannels.slice(0, 5).join('\n') : 'Todos los canales son accesibles', 
+                                    inline: true 
+                                },
+                                { 
+                                    name: '💡 Instrucciones', 
+                                    value: '1. Únete a cualquier canal de voz\n2. Ejecuta `$vc` y el bot te seguirá\n3. O especifica: `$vc [nombre del canal]`', 
+                                    inline: false 
+                                }
                             )
-                            .setFooter({ text: 'Community Stealth | xpe.nettt' })
+                            .setFooter({ text: 'Community Stealth | Escaneo completado' })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [voiceEmbed] });
                     }
                 } else {
-                    // Unirse al canal especificado (VERSIÓN CORREGIDA)
-                    const channelName = args.join(' ');
+                    // Unirse al canal especificado por nombre
+                    const channelName = args.join(' ').toLowerCase();
                     
                     // Buscar canal de voz por nombre
                     const voiceChannel = message.guild.channels.cache.find(channel => 
-                        channel.type === 2 && // GUILD_VOICE
-                        channel.name.toLowerCase().includes(channelName.toLowerCase())
+                        channel.type === 2 && 
+                        channel.name.toLowerCase().includes(channelName)
                     );
                     
                     if (!voiceChannel) {
+                        // Mostrar canales disponibles
+                        const availableChannels = message.guild.channels.cache
+                            .filter(channel => channel.type === 2)
+                            .map(channel => channel.name)
+                            .slice(0, 8)
+                            .join('\n');
+                        
                         const errorEmbed = new EmbedBuilder()
                             .setTitle('❌ Canal No Encontrado')
-                            .setDescription(`No se encontró un canal de voz con el nombre "${channelName}"`)
+                            .setDescription(`No se encontró un canal de voz que contenga "${args.join(' ')}"`)
                             .setColor('#ff0000')
                             .addFields(
-                                { name: '🔍 Canales Disponibles', value: message.guild.channels.cache.filter(channel => channel.type === 2).map(ch => ch.name).slice(0, 5).join('\n') || 'No hay canales de voz', inline: false },
-                                { name: '💡 Sugerencia', value: `Usa un nombre más específico o verifica el nombre exacto.`, inline: false }
+                                { 
+                                    name: '🔍 Canales Disponibles', 
+                                    value: availableChannels || 'No hay canales de voz disponibles', 
+                                    inline: false 
+                                },
+                                { 
+                                    name: '💡 Sugerencias', 
+                                    value: '• Usa un nombre más específico\n• Incluye palabras del nombre (ej: "general" para "General de Gaming")\n• O entra a un canal y usa `$vc` sin parámetros', 
+                                    inline: false 
+                                }
                             )
                             .setFooter({ text: `Uso: ${BOT_PREFIX}vc [nombre del canal]` })
                             .setTimestamp();
@@ -642,24 +716,42 @@ client.on('messageCreate', async (message) => {
                     }
                     
                     try {
+                        // Verificar permisos antes de conectarse
+                        const permissions = voiceChannel.permissionsFor(message.guild.members.me);
+                        if (!permissions || !permissions.has('Connect')) {
+                            const permissionEmbed = new EmbedBuilder()
+                                .setTitle('❌ Sin Permisos')
+                                .setDescription(`No tengo permisos para unirme al canal **${voiceChannel.name}**`)
+                                .addFields(
+                                    { name: '🔧 Permisos Necesarios', value: '• CONNECT - Conectarse\n• SPEAK - Hablar\n• VIEW_CHANNEL - Ver canal', inline: false },
+                                    { name: '⚙️ Solución', value: 'Pide al administrador que me dé permisos de voz', inline: false }
+                                )
+                                .setColor('#ff0000')
+                                .setTimestamp();
+                            
+                            await message.reply({ embeds: [permissionEmbed] });
+                            return;
+                        }
+                        
                         // Si el bot ya está en un canal, desconectarlo primero
                         if (message.guild.members.me.voice.channel) {
                             await message.guild.members.me.voice.disconnect();
                         }
                         
-                        // El bot se conecta al canal especificado
+                        // Conectar al canal especificado
                         await message.guild.members.me.voice.setChannel(voiceChannel.id);
                         
                         const successEmbed = new EmbedBuilder()
-                            .setTitle('✅ Bot Unido al Canal')
+                            .setTitle('✅ Bot Conectado')
                             .setDescription(`El bot se ha unido al canal de voz **${voiceChannel.name}**`)
                             .setColor('#00ff00')
                             .addFields(
-                                { name: '📢 Anuncio', value: '¡El bot está ahora en este canal para monitoreo!', inline: false },
-                                { name: '🔧 Estado', value: 'Monitoreo de audio activo', inline: true },
-                                { name: '⚠️ Nota', value: 'Para que el bot monitoree, debe tener permisos de voz', inline: true }
+                                { name: '📢 Monitoreo Activo', value: '¡El bot está monitoreando este canal!', inline: false },
+                                { name: '🔗 Canal', value: `${voiceChannel.name}`, inline: true },
+                                { name: '👥 Usuarios', value: `${voiceChannel.members.size}`, inline: true },
+                                { name: '🎧 Funciones', value: '• Audio monitoring\n• Voice detection\n• Anti-cheat surveillance', inline: false }
                             )
-                            .setFooter({ text: `Canal: ${voiceChannel.name} | ID: ${voiceChannel.id}` })
+                            .setFooter({ text: `Canal ID: ${voiceChannel.id} | Monitoreo 24/7` })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [successEmbed] });
@@ -672,10 +764,10 @@ client.on('messageCreate', async (message) => {
                             .setDescription(`No se pudo conectar al canal de voz.`)
                             .setColor('#ff0000')
                             .addFields(
-                                { name: '🔧 Posibles Soluciones', value: '• Verificar permisos de voz\n• El canal puede estar lleno\n• El bot puede estar en cooldown', inline: false },
-                                { name: '📞 Contacto', value: 'Si persiste el error, contacta al administrador', inline: false }
+                                { name: '🚨 Error', value: voiceError.message, inline: false },
+                                { name: '🔧 Soluciones', value: '• Verificar permisos del bot\n• El canal puede estar lleno\n• Problema de conectividad', inline: false },
+                                { name: '📞 Soporte', value: 'Si persiste el error, contacta al administrador', inline: false }
                             )
-                            .setFooter({ text: 'Error: ' + voiceError.message })
                             .setTimestamp();
                         
                         await message.reply({ embeds: [errorEmbed] });
