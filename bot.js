@@ -510,17 +510,23 @@ client.on('messageCreate', async (message) => {
                 break;
                 
             case 'about':
+                const uptimeHours = Math.floor(process.uptime() / 3600);
+                const uptimeMinutes = Math.floor((process.uptime() % 3600) / 60);
+                
                 const aboutEmbed = new EmbedBuilder()
-                    .setTitle('🤖 Acerca de Stealth-AntiCheat')
-                    .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt')
+                    .setTitle('🤖 Acerca de Stealth-AntiCheatX')
+                    .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
                     .setColor('#0099ff')
                     .addFields(
-                        { name: '📋 Información', value: `**Nombre:** ${client.user.username}\n**ID:** ${client.user.id}\n**Estado:** Online ✅\n**Uptime:** ${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m`, inline: true },
+                        { name: '📋 Información', value: `**Nombre:** ${client.user.username}\n**ID:** ${client.user.id}\n**Estado:** Online ✅\n**Uptime:** ${uptimeHours}h ${uptimeMinutes}m`, inline: true },
                         { name: '👨‍💻 Desarrollador', value: 'xpe.nettt | Community Stealth', inline: true },
-                        { name: '🛡️ Funciones', value: 'Anti-cheat avanzado, análisis de amenazas, monitoreo automático', inline: true },
-                        { name: '📊 Estadísticas', value: `**Servidores:** ${client.guilds.cache.size}\n**Comandos:** 15+\n**Nivel de seguridad:** Máximo`, inline: true }
+                        { name: '🛡️ Funciones Core', value: '• Anti-cheat avanzado con detección automática\n• Análisis de amenazas en tiempo real\n• Monitoreo inteligente de patterns\n• Sistema de permisos inteligente', inline: true },
+                        { name: '⚡ Características Avanzadas', value: '• **Detección automática:** Análisis de patrones de cheats\n• **Consultas inteligentes:** Auto-consulta a desarrolladores\n• **Auto-actualización:** Repository auto-sync al aprobar\n• **Monitoreo 24/7:** Threat analysis continuo', inline: true },
+                        { name: '📊 Estadísticas del Sistema', value: `**Servidores activos:** ${client.guilds.cache.size}\n**Comandos disponibles:** 20+\n**Patterns detectados:** 12+ tipos de cheats\n**Nivel de seguridad:** 🔒 Máximo\n**Sistema de permisos:** ✅ Activo`, inline: true },
+                        { name: '🔧 Comandos de Permisos', value: '```\n$dev approve approve [ID] - Aprobar\n$dev approve deny [ID] - Rechazar\n$dev pending - Ver pendientes\n```\n*Requiere permisos de desarrollador*', inline: false },
+                        { name: '🎯 Integraciones', value: '• **GitHub API:** Auto-actualización de repositorio\n• **Discord Webhooks:** Reportes automáticos\n• **Sistema de tags:** `<@751601149928538224>`\n• **Canales especializados:** Implementaciones y descubrimientos', inline: true }
                     )
-                    .setFooter({ text: 'Community Stealth' })
+                    .setFooter({ text: 'Community Stealth | Sistema de Permisos Inteligente' })
                     .setTimestamp();
                 
                 await message.reply({ embeds: [aboutEmbed] });
