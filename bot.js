@@ -1,6 +1,7 @@
 // ========================================================
-// BOT SIMPLIFICADO - 2025-11-27 16:04:23
+// BOT SIMPLIFICADO - 2025-11-27 16:09:02
 // Comandos de voz simplificados: $vc y $vc random
+// CORREGIDO: Error de sintaxis en línea 724-729
 // Preparado para IA con MiniMax API
 // ========================================================
 
@@ -720,13 +721,7 @@ client.on('messageCreate', async (message) => {
                         .setTimestamp();
                     
                     await message.reply({ embeds: [unknownEmbed] });
-                    return; 
-                                        value: availableChannels || 'Sin canales accesibles', 
-                                        inline: false 
-                                    }
-                                )
-                                .setFooter({ text: 'Community Stealth | Sistema de Voz' })
-                                .setTimestamp();
+                    return;
                             
                             await message.reply({ embeds: [notFoundEmbed] });
                             return;
