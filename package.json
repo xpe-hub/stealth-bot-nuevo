@@ -2,7 +2,7 @@
   "name": "stealth-discord-bot",
   "version": "2.0.0",
   "description": "Bot avanzado de Discord con análisis anti-cheat y canales específicos",
-  "main": "bot.js",
+  "main": "bot_completo.js",
   "scripts": {
     "start": "node bot.js"
   },
