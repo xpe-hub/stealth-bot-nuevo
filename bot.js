@@ -150,7 +150,6 @@ client.once('ready', () => {
         developers.owners.push(BOT_OWNER_ID);
         saveDevelopers(developers);
     }
-});
 
 // Evento: Nuevo mensaje
 client.on('messageCreate', async (message) => {
