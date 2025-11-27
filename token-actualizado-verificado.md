@@ -1,24 +1,21 @@
-# 🔧 FORMATO RAILWAY - Variables Individuales
+# ✅ Token del Bot Actualizado
 
-## 📋 CÓMO COPIAR FÁCIL:
+## 🔐 VERIFICACIÓN EXITOSA:
 
-Para cada variable, copia la línea completa y Railway la dividirá automáticamente:
+**Token del bot de Discord:**
+- ✅ **Nombre:** Stealth-AntiCheatX (#9334)
+- ✅ **Token:** `MTQ0MTg3ODA3MjUwNzg5MTcyMg.GtM5hc.gCwZut05T36Cqm7YXtPXil-Qo2iCVDPuJFthmw`
+- ✅ **Estado:** Bot público configurado
+- ✅ **Portal:** Discord Developer Portal actualizado
 
-**Ejemplo para DISCORD_BOT_TOKEN:**
-```
-DISCORD_BOT_TOKEN=MTQ0MTg3ODA3MjUwNzg5MTcyMg.GtM5hc.gCwZut05T36Cqm7YXtPXil-Qo2iCVDPuJFthmw
-```
+## 📋 ARCHIVOS ACTUALIZADOS:
 
-1. **En Railway Variables:**
-   - Nombre: `DISCORD_BOT_TOKEN` 
-   - Valor: `1441878707250791722.GHFGuP.JZJGI3pJDm2iaN2CJHiRUKoyq_kqxIPoh6ADws`
+### ✅ Archivos con token actualizado:
+- `formato-copy-paste-individual.md` ✅
+- `copy-paste-variables-railway.md` ✅
+- `configuracion-completa-railway.md` ✅
 
-2. **Copia cada línea completa** de la lista ↓
-
----
-
-## ✅ LAS 21 VARIABLES (copy-paste individual):
-
+### 📝 Variables para copiar (actualizadas):
 ```
 DISCORD_BOT_TOKEN=MTQ0MTg3ODA3MjUwNzg5MTcyMg.GtM5hc.gCwZut05T36Cqm7YXtPXil-Qo2iCVDPuJFthmw
 BOT_OWNER_ID=751601149928538224
@@ -43,16 +40,21 @@ LOG_TO_FILE=true
 SERVER_PORT=3000
 ```
 
----
+## 🚀 SIGUIENTE PASO:
 
-## 🚀 PROCESO RÁPIDO:
+**Configuración manual en Railway:**
+1. Ve a Railway → Variables del servicio "stealth-bot-nuevo"
+2. Elimina TODAS las variables con `YOUR_*`
+3. Agrega las 21 variables de arriba (5-7 minutos)
+4. Reinicia el servicio
+5. Revisa los logs
 
-1. **Haz clic 21 veces** en "Add Variable" en Railway
-2. **Para cada una:**
-   - Copia una línea completa de arriba
-   - Railway la divide automáticamente en NAME=VALUE
-   - Haz clic en "Add"
-3. **Reinicia el servicio**
-4. **Revisa los logs**
+## ✅ RESULTADO ESPERADO:
 
-**⏱️ Tiempo estimado:** 5-7 minutos máximo
+Después de la configuración:
+- ✅ Bot funcionando en Railway
+- ✅ Sin errores de token
+- ✅ Logs mostrando: "Bot está listo y funcionando!"
+- ✅ Bot online en Discord
+
+**🎯 Todo listo para la configuración manual final!**
