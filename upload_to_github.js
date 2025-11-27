@@ -65,21 +65,26 @@ async function uploadFile(path, content) {
   
   // Crear o actualizar archivo
   const commitMessage = path === 'bot.js' 
-    ? `🎤 SIMPLIFICACIÓN: Comandos de Voz Simplificados\n\n` +
-      `🔧 OBJETIVO: Bot específico con funciones claras\n\n` +
-      `✅ Cambios implementados:\n` +
-      `• SIMPLIFICADO: Solo 2 comandos esenciales\n` +
-      `• \\$vc - Unión automática si usuario está en canal\n` +
-      `• \\$vc random - Canal aleatorio con personas\n` +
-      `• ELIMINADO: Opciones complejas (auto, most_active, por nombre)\n` +
-      `• LIMPIADO: Código de ~800 líneas a ~150 líneas\n` +
-      `• OPTIMIZADO: Enfoque en funcionalidades específicas\n` +
-      `• PREPARADO: Para implementación de IA con MiniMax API\n\n` +
-      `🎯 Filosofía del bot:\n` +
-      `• Bot específico con misiones específicas\n` +
-      `• Sin funciones innecesarias\n` +
-      `• Preparado para automatización con IA\n` +
-      `• Focus en completar implementaciones actuales\n\n` +
+    ? `🚀 MEJORA CRÍTICA: Comandos $vc y $add_server Funcionales\n\n` +
+      `🔥 PROBLEMAS RESUELTOS:\n` +
+      `• \\$vc ahora incluye logging detallado para debugging\n` +
+      `• \\$vc random funciona correctamente con mejor selección\n` +
+      `• \\$add_server procesa enlaces de Discord correctamente\n` +
+      `• \\$add_server bot muestra enlace de invitación del bot\n` +
+      `• Mejorado manejo de errores con mensajes claros\n` +
+      `• Agregadas confirmaciones visuales de conexión\n` +
+      `• Logging detallado en Railway para troubleshooting\n\n` +
+      `🔧 Comandos mejorados:\n` +
+      `• \\$vc [sin args] - Auto-join si estás en canal\n` +
+      `• \\$vc random - Canal aleatorio con usuarios\n` +
+      `• \\$add_server [link] - Procesa enlace de servidor\n` +
+      `• \\$add_server bot - Obtener enlace de invitación\n` +
+      `• \\$add_server [sin args] - Mostrar ayuda completa\n\n` +
+      `🎯 Funcionalidad completada:\n` +
+      `• Bot se conecta a canales de voz correctamente\n` +
+      `• Sistema de logging para monitorear actividad\n` +
+      `• Comandos de servidor completamente funcionales\n` +
+      `• Preparado para implementación de IA MiniMax\n\n` +
       `🔧 Desarrollado por: xpe.nettt\n` +
       `📅 Fecha: ${new Date().toLocaleString()}\n` +
       `🏠 Community Stealth`
