@@ -580,8 +580,8 @@ con el verdadero StealthAntiCheatX.exe`;
                 
                 const uptime = Math.floor(process.uptime() / 3600);
                 const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
-                const threats = performThreatAnalysis();
-                const totalThreats = threats.reduce((sum, threat) => sum + threat.count, 0);
+                const threatAnalysis = performThreatAnalysis();
+                const totalThreats = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
                 
                 const statusEmbed = new EmbedBuilder()
                     .setTitle('📊 Estado del Bot')
