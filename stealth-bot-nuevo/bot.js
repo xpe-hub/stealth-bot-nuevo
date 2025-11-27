@@ -305,10 +305,8 @@ class StealthAntiCheatInfiltrationSystem {
                 const autoUpdateResult = await this.updateAntiCheatRepository();
                 
                 const devEmbed = new EmbedBuilder()
-                    .setTitle('🤖 BOT AUTO-ACTUALIZÁNDOSE')
-                    .setDescription(autoUpdateResult?.success ? 
-                        '🚀 **NUEVO MÉTODO DETECTADO - AUTO-ACTUALIZACIÓN EN PROGRESO**' : 
-                        '⚠️ **NUEVO MÉTODO DETECTADO - ERROR EN AUTO-ACTUALIZACIÓN**')
+                    .setTitle('💬 CONSULTA AUTOMÁTICA A DESARROLLADORES')
+                    .setDescription('🚀 **NUEVO MÉTODO DETECTADO - REQUIERE IMPLEMENTACIÓN**')
                     .addFields(
                         { name: '🕵️ Método Encontrado', value: `**Fuente**: ${method.sourceGuild}\\n**Canal**: ${method.sourceChannel}\\n**Timestamp**: ${new Date(method.timestamp).toLocaleString()}`, inline: false },
                         { name: '💬 Contenido Detectado', value: method.content.substring(0, 200) + (method.content.length > 200 ? '...' : ''), inline: false }
