@@ -65,19 +65,20 @@ async function uploadFile(path, content) {
   
   // Crear o actualizar archivo
   const commitMessage = path === 'bot.js' 
-    ? `🎤 ACTUALIZACIÓN: Sistema Inteligente de Canales de Voz\n\n` +
-      `✨ Comportamiento Inteligente Implementado:\n` +
-      `• Detección automática de canales de voz accesibles\n` +
-      `• Auto-unión cuando el usuario está en un canal\n` +
-      `• Opciones inteligentes: random, auto, most_active\n` +
-      `• Búsqueda inteligente por nombre de canal\n` +
-      `• Sistema de permisos verificado antes de conectarse\n` +
-      `• Códigos duplicados eliminados y lógica optimizada\n\n` +
-      `🤖 Comandos de voz mejorados:\n` +
-      `• \\$vc - Escaneo automático de canales\n` +
-      `• \\$vc random - Unirse a canal aleatorio\n` +
-      `• \\$vc auto - Canal automático más activo\n` +
-      `• \\$vc [nombre] - Canal específico\n\n` +
+    ? `🎤 CORRECCIÓN CRÍTICA: Sistema de Voz Funcional\n\n` +
+      `🚨 PROBLEMA RESUELTO: Bot no se unía a canales de voz\n\n` +
+      `✅ Cambios implementados:\n` +
+      `• CORRECCIÓN: Bot se une A SÍ MISMO (no mueve usuarios)\n` +
+      `• ELIMINADO: Opción 'most_active' (solicitado por usuario)\n` +
+      `• MEJORADO: Auto-detección cuando usuario está en canal\n` +
+      `• SIMPLIFICADO: Lógica de conexión directa y funcional\n` +
+      `• ROBUSTO: Verificaciones de permisos mejoradas\n` +
+      `• LIMPIO: Códigos duplicados eliminados completamente\n\n` +
+      `🎯 Comandos de voz ahora funcionales:\n` +
+      `• \\$vc - Lista canales disponibles\n` +
+      `• \\$vc random - Se une a canal aleatorio\n` +
+      `• \\$vc auto - Se une automáticamente al más inteligente\n` +
+      `• \\$vc [nombre] - Se une a canal específico\n\n` +
       `🔧 Desarrollado por: xpe.nettt\n` +
       `📅 Fecha: ${new Date().toLocaleString()}\n` +
       `🏠 Community Stealth`
