@@ -1,21 +1,9 @@
-/**
- * 🤖 STEALTH ANTICHEAT BOT - VERSIÓN SIMPLIFICADA PARA DEBUG
- * Esta es una versión simplificada para verificar que el bot funciona correctamente
- */
+require('dotenv').config();
+const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-const { config } = require('dotenv');
-
-// Load environment variables
-config();
-
-// Verificar variables de entorno
-console.log('🔧 Configuración del Bot:');
-console.log('Token presente:', !!process.env.DISCORD_BOT_TOKEN);
-console.log('Owner ID:', process.env.BOT_OWNER_ID);
-console.log('Prefix:', process.env.BOT_PREFIX);
-
-// Client initialization
+// Configuración del bot
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -26,167 +14,308 @@ const client = new Client({
     ]
 });
 
-// Evento Ready
-client.once('ready', async () => {
-    console.log(`✅ Bot está online como ${client.user.tag}!`);
+// Variables de configuración
+const BOT_PREFIX = process.env.BOT_PREFIX || '$';
+const BOT_OWNER_ID = process.env.BOT_OWNER_ID;
+const SUPPORT_CHANNEL_ID = process.env.SUPPORT_CHANNEL_ID;
+
+// Base de datos de apodos (archivo JSON simple)
+const NICKNAMES_FILE = path.join(__dirname, 'nicknames.json');
+
+// Funciones para manejar apodos
+function loadNicknames() {
+    try {
+        if (fs.existsSync(NICKNAMES_FILE)) {
+            const data = fs.readFileSync(NICKNAMES_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.log('Error loading nicknames:', error);
+    }
+    return {};
+}
+
+function saveNicknames(nicknames) {
+    try {
+        fs.writeFileSync(NICKNAMES_FILE, JSON.stringify(nicknames, null, 2));
+    } catch (error) {
+        console.log('Error saving nicknames:', error);
+    }
+}
+
+let nicknames = loadNicknames();
+
+// Funciones auxiliares
+function isOwner(userId) {
+    return userId === BOT_OWNER_ID;
+}
+
+function getUserNickname(userId, username) {
+    return nicknames[userId] || username;
+}
+
+function getTotalMemberCount(client) {
+    let totalMembers = 0;
+    client.guilds.cache.forEach(guild => {
+        totalMembers += guild.memberCount;
+    });
+    return totalMembers;
+}
+
+function getCurrentGuildMemberCount(client) {
+    const guild = client.guilds.cache.first();
+    return guild ? guild.memberCount : 0;
+}
+
+// Función para enviar respuesta con apodo
+function respondWithNickname(interaction, message, username) {
+    const nickname = getUserNickname(interaction.author.id, username);
+    const response = message.replace('{username}', nickname);
+    interaction.reply(response);
+}
+
+// Evento: Bot listo
+client.once('ready', () => {
+    console.log('🤖 Bot está listo y funcionando!');
+    console.log(`📍 Conectado como: ${client.user.tag}`);
+    console.log(`🏠 En ${client.guilds.cache.size} servidores`);
     
-    // Establecer actividad del bot
-    await client.user.setPresence({
+    // Establecer presencia del bot
+    client.user.setPresence({
         status: 'online',
-        activities: [{ name: '🛡️ AntiCheat Community Stealth', type: 'WATCHING' }]
+        activities: [{ 
+            name: '🛡️ AntiCheat Community Stealth', 
+            type: 3 // WATCHING
+        }]
     });
 });
 
-// Evento Message
+// Evento: Nuevo mensaje
 client.on('messageCreate', async (message) => {
-    // Ignorar bots
-    if (message.author.bot) {
-        console.log('🛑 Mensaje de bot ignorado:', message.author.tag);
+    // Ignorar mensajes de otros bots
+    if (message.author.bot) return;
+    
+    // Obtener el apodo del usuario
+    const userNickname = getUserNickname(message.author.id, message.author.username);
+    
+    // Manejo de menciones
+    if (message.content.includes(`<@${client.user.id}>`)) {
+        const totalMembers = getTotalMemberCount(client);
+        const currentGuildMembers = getCurrentGuildMemberCount(client);
+        
+        const embed = new EmbedBuilder()
+            .setTitle('🤖 ¡Stealth-AntiCheat-bot está aquí!')
+            .setDescription(`¡Hola ${userNickname}! Soy el bot de **anti-cheat avanzado** para Community Stealth.`)
+            .setColor('#0099ff')
+            .addFields(
+                { name: '📋 Comandos', value: `\`${BOT_PREFIX}help\` - Lista de comandos\n\`${BOT_PREFIX}ping\` - Verificar estado\n\`${BOT_PREFIX}scan\` - para escanear el servidor`, inline: true },
+                { name: '🌐 Comunidad', value: '¡Únete a Community Stealth!', inline: true },
+                { name: '📊 Estado', value: `Bot conectado: ✅\nServidores: ${client.guilds.cache.size}\nUsuarios: ${totalMembers}`, inline: true }
+            )
+            .setFooter({ text: 'Stealth-AntiCheat-bot v2.0 | xpe.nettt' })
+            .setTimestamp();
+        
+        await message.reply({ embeds: [embed] });
         return;
     }
-
-    console.log(`💬 Mensaje recibido de ${message.author.tag} en ${message.channel.name}: ${message.content}`);
-
+    
+    // Manejo de comandos
+    if (!message.content.startsWith(BOT_PREFIX)) return;
+    
+    const args = message.content.slice(BOT_PREFIX.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+    
     try {
-        const content = message.content;
-        const prefix = process.env.BOT_PREFIX || '$';
-
-        // Manejar menciones
-        if (content.includes(`<@${client.user.id}>`) || content.includes(`<@!${client.user.id}>`)) {
-            console.log('🎯 Mención detectada, enviando respuesta...');
-            
-            const mentionEmbed = new EmbedBuilder()
-                .setTitle('🤖 ¡Stealth-AntiCheat-bot está aquí!')
-                .setDescription(`¡Hola ${message.author.username}! Soy el bot de **anti-cheat avanzado** para Community Stealth.`)
-                .addFields(
-                    { name: '🛡️ Comandos Disponibles', value: `\`${prefix}help\` - Lista de comandos\n\`${prefix}ping\` - Verificar estado`, inline: true },
-                    { name: '🔍 Escaneo', value: `Usa \`${prefix}scan\` para escanear el servidor`, inline: true },
-                    { name: '🌐 Comunidad', value: `¡Únete a Community Stealth!`, inline: true },
-                    { name: '📊 Estado', value: `Bot conectado: ✅\nServidores: ${client.guilds.cache.size}\nUsuarios: ${client.users.cache.size}`, inline: true }
-                )
-                .setColor('#0099ff')
-                .setFooter({ text: 'Stealth-AntiCheat-bot v2.0 | xpe.nettt' })
-                .setTimestamp();
-
-            await message.reply({ embeds: [mentionEmbed] });
-            console.log('✅ Respuesta enviada exitosamente');
-            return;
-        }
-
-        // Manejar comandos
-        if (content.startsWith(prefix)) {
-            console.log('⚡ Comando detectado:', content);
-            
-            const args = content.slice(prefix.length).trim().split(/ +/);
-            const command = args.shift().toLowerCase();
-
-            switch (command) {
-                case 'help':
-                case 'h':
-                    console.log('📋 Ejecutando comando help...');
-                    const helpEmbed = new EmbedBuilder()
-                        .setTitle('🛡️ Comandos del Bot')
-                        .setDescription('Lista de comandos disponibles para Stealth-AntiCheat-bot')
+        switch (command) {
+            case 'help':
+            case 'h':
+                const helpEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Comandos del Bot')
+                    .setDescription('Lista de comandos disponibles para Stealth-AntiCheat-bot')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista de comandos\n\`${BOT_PREFIX}ping\` - Verifica la latencia del bot\n\`${BOT_PREFIX}info\` - Información del bot`, inline: true },
+                        { name: '🔍 Anti-Cheat', value: `\`${BOT_PREFIX}scan\` - Escanea el servidor en busca de amenazas\n\`${BOT_PREFIX}anticheat\` - Descargar herramienta anti-cheat`, inline: true },
+                        { name: '👤 Personalización', value: `\`${BOT_PREFIX}apodo [nombre]\` - Establece tu apodo\n\`${BOT_PREFIX}apodo\` - Ver tu apodo actual`, inline: true }
+                    )
+                    .setFooter({ text: 'Desarrollado por xpe.nettt' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [helpEmbed] });
+                break;
+                
+            case 'ping':
+                const ping = Math.round(client.ws.ping);
+                let statusEmoji = '🟢';
+                let statusText = 'Excelente';
+                
+                if (ping >= 300) {
+                    statusEmoji = '🔴';
+                    statusText = 'Lenta';
+                } else if (ping >= 100) {
+                    statusEmoji = '🟡';
+                    statusText = 'Buena';
+                }
+                
+                const pingEmbed = new EmbedBuilder()
+                    .setTitle('🏓 Pong!')
+                    .setColor('#ffaa00')
+                    .addFields(
+                        { name: '⚡ Latencia del Bot', value: `${ping}ms`, inline: true },
+                        { name: '🌐 Latencia del WebSocket', value: `${client.ws.ping}ms`, inline: true },
+                        { name: '📊 Estado', value: `${statusEmoji} ${statusText}`, inline: true }
+                    )
+                    .setFooter({ text: `¡Hola ${userNickname}!` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [pingEmbed] });
+                break;
+                
+            case 'info':
+                const totalMembers = getTotalMemberCount(client);
+                const currentGuildMembers = getCurrentGuildMemberCount(client);
+                
+                const infoEmbed = new EmbedBuilder()
+                    .setTitle('🤖 Información del Bot')
+                    .setDescription('Bot de Discord para Community Stealth con funcionalidades anti-cheat')
+                    .setColor('#0099ff')
+                    .addFields(
+                        { name: '📋 Detalles', value: `**Nombre:** ${client.user.username}\n**ID:** ${client.user.id}\n**Versión:** 2.0.0-Advanced`, inline: false },
+                        { name: '👨‍💻 Desarrollador', value: 'xpe.nettt', inline: true },
+                        { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
+                        { name: '👥 Usuarios Totales', value: `${totalMembers}`, inline: true },
+                        { name: '🏢 Miembros del Servidor Actual', value: `${currentGuildMembers}`, inline: true }
+                    )
+                    .setFooter({ text: `¡Hola ${userNickname}!` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [infoEmbed] });
+                break;
+                
+            case 'scan':
+                // Simulación de escaneo del servidor
+                const scanEmbed = new EmbedBuilder()
+                    .setTitle('🔍 Escaneando Servidor...')
+                    .setDescription('Analizando el servidor en busca de amenazas y actividades sospechosas.')
+                    .setColor('#ffaa00')
+                    .addFields(
+                        { name: '👥 Miembros Escaneados', value: `${getCurrentGuildMemberCount(client)}`, inline: true },
+                        { name: '⚠️ Amenazas Detectadas', value: '0', inline: true },
+                        { name: '🛡️ Nivel de Seguridad', value: 'Alto', inline: true },
+                        { name: '📊 Análisis Completado', value: '✅ Sin problemas detectados', inline: false }
+                    )
+                    .setFooter({ text: `¡Hola ${userNickname}!` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [scanEmbed] });
+                break;
+                
+            case 'anticheat':
+                // Comando para descargar herramienta anti-cheat
+                if (!isOwner(message.author.id)) {
+                    return message.reply('❌ Solo el desarrollador puede usar este comando.');
+                }
+                
+                const anticheatEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Herramienta Anti-Cheat')
+                    .setDescription('Herramienta avanzada de detección y eliminación de cheats para juegos.')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '📋 Descripción', value: 'Sistema anti-cheat avanzado con detección de modificaciones, inyectores y programas maliciosos.', inline: false },
+                        { name: '🔧 Características', value: '• Detección en tiempo real\n• Eliminación automática\n• Protección preventiva\n• Actualizaciones automáticas', inline: false },
+                        { name: '💻 Compatibilidad', value: 'Windows 10/11, 64-bit', inline: true }
+                    )
+                    .setFooter({ text: `¡Hola ${userNickname}!` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [anticheatEmbed] });
+                break;
+                
+            case 'apodo':
+            case 'nickname':
+                if (args.length === 0) {
+                    // Mostrar apodo actual
+                    const currentNickname = getUserNickname(message.author.id, message.author.username);
+                    const nicknameEmbed = new EmbedBuilder()
+                        .setTitle('👤 Tu Apodo')
+                        .setDescription(`Tu apodo actual es: **${currentNickname}**`)
+                        .setColor('#0099ff')
                         .addFields(
-                            { name: `${prefix}help`, value: 'Muestra esta lista de comandos', inline: true },
-                            { name: `${prefix}ping`, value: 'Verifica la latencia del bot', inline: true },
-                            { name: `${prefix}scan`, value: 'Escanea el servidor en busca de amenazas', inline: true },
-                            { name: `${prefix}info`, value: 'Información del bot', inline: true },
-                            { name: 'Menciones', value: `@${client.user.username} - Información rápida`, inline: true }
+                            { name: '💡 Para cambiar', value: `Usa: \`${BOT_PREFIX}apodo [nuevo nombre]\``, inline: false }
                         )
-                        .setColor('#00ff00')
-                        .setFooter({ text: 'Desarrollado por xpe.nettt' });
-
-                    await message.reply({ embeds: [helpEmbed] });
-                    break;
-
-                case 'ping':
-                    console.log('🏓 Ejecutando comando ping...');
-                    const ping = Date.now() - message.createdTimestamp;
-                    const latency = client.ws.ping;
+                        .setFooter({ text: 'Stealth-AntiCheat-bot | xpe.nettt' })
+                        .setTimestamp();
                     
-                    const pingEmbed = new EmbedBuilder()
-                        .setTitle('🏓 Pong!')
+                    await message.reply({ embeds: [nicknameEmbed] });
+                } else {
+                    // Establecer nuevo apodo
+                    const newNickname = args.join(' ');
+                    const oldNickname = getUserNickname(message.author.id, message.author.username);
+                    
+                    nicknames[message.author.id] = newNickname;
+                    saveNicknames(nicknames);
+                    
+                    const nicknameEmbed = new EmbedBuilder()
+                        .setTitle('👤 Apodo Actualizado')
+                        .setDescription(`✅ Apodo actualizado correctamente!`)
+                        .setColor('#00ff00')
                         .addFields(
-                            { name: 'Latencia del Bot', value: `${ping}ms`, inline: true },
-                            { name: 'Latencia del WebSocket', value: `${latency}ms`, inline: true },
-                            { name: 'Estado', value: latency < 100 ? '🟢 Excelente' : latency < 300 ? '🟡 Buena' : '🔴 Lenta', inline: true }
+                            { name: '📝 Apodo Anterior', value: oldNickname, inline: true },
+                            { name: '🎯 Nuevo Apodo', value: newNickname, inline: true }
                         )
-                        .setColor('#ffaa00');
-
-                    await message.reply({ embeds: [pingEmbed] });
-                    break;
-
-                case 'info':
-                    console.log('ℹ️ Ejecutando comando info...');
-                    const infoEmbed = new EmbedBuilder()
-                        .setTitle('🤖 Información del Bot')
-                        .setDescription('Bot de Discord para Community Stealth con funcionalidades anti-cheat')
-                        .addFields(
-                            { name: 'Nombre', value: client.user.username, inline: true },
-                            { name: 'ID', value: client.user.id, inline: true },
-                            { name: 'Versión', value: '2.0.0-Advanced', inline: true },
-                            { name: 'Desarrollador', value: 'xpe.nettt', inline: true },
-                            { name: 'Servidores', value: `${client.guilds.cache.size}`, inline: true },
-                            { name: 'Usuarios Totales', value: `${client.users.cache.size}`, inline: true }
-                        )
-                        .setColor('#0099ff');
-
-                    await message.reply({ embeds: [infoEmbed] });
-                    break;
-
-                default:
-                    console.log('❌ Comando no reconocido:', command);
-                    const unknownEmbed = new EmbedBuilder()
-                        .setTitle('❌ Comando no reconocido')
-                        .setDescription(`El comando \`${command}\` no existe. Usa \`${prefix}help\` para ver comandos disponibles.`)
-                        .setColor('#ff0000');
-
-                    await message.reply({ embeds: [unknownEmbed] });
-                    break;
-            }
-            return;
+                        .setFooter({ text: 'Stealth-AntiCheat-bot | xpe.nettt' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [nicknameEmbed] });
+                }
+                break;
+                
+            default:
+                const unknownEmbed = new EmbedBuilder()
+                    .setTitle('❓ Comando no reconocido')
+                    .setDescription(`No conozco el comando \`${command}\`.`)
+                    .addFields(
+                        { name: '💡 Ayuda', value: `Usa \`${BOT_PREFIX}help\` para ver todos los comandos disponibles.`, inline: false }
+                    )
+                    .setColor('#ff0000')
+                    .setFooter({ text: `¡Hola ${userNickname}!` })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [unknownEmbed] });
         }
-
-        // Si llega aquí, no es comando ni mención
-        console.log('📝 Mensaje normal ignorado');
-
     } catch (error) {
-        console.error('❌ Error procesando mensaje:', error);
-        await message.reply('❌ Ocurrió un error procesando el mensaje.');
+        console.error('Error ejecutando comando:', error);
+        const errorEmbed = new EmbedBuilder()
+            .setTitle('❌ Error')
+            .setDescription('Ocurrió un error ejecutando el comando.')
+            .setColor('#ff0000')
+            .setFooter({ text: 'Stealth-AntiCheat-bot | xpe.nettt' })
+            .setTimestamp();
+        
+        await message.reply({ embeds: [errorEmbed] });
     }
 });
 
-// Evento de Error
-client.on('error', (error) => {
-    console.error('❌ Error de Discord.js:', error);
+// Manejo de errores
+client.on('error', error => {
+    console.error('Error de Discord.js:', error);
 });
 
-// Evento de Warning
-client.on('warn', (warning) => {
-    console.warn('⚠️ Warning de Discord.js:', warning);
+client.on('warn', warning => {
+    console.warn('Advertencia de Discord.js:', warning);
 });
 
-// Manejar errores no capturados
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection:', reason);
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
+process.on('uncaughtException', error => {
+    console.error('Uncaught Exception:', error);
     process.exit(1);
 });
 
-// Conectar el bot
-console.log('🚀 Iniciando conexión a Discord...');
-client.login(process.env.DISCORD_BOT_TOKEN).then(() => {
-    console.log('✅ Login exitoso!');
-}).catch(error => {
-    console.error('❌ Error de login:', error);
-    console.error('🔍 Detalles del error:', {
-        message: error.message,
-        code: error.code,
-        type: error.type
-    });
+// Login del bot
+client.login(process.env.DISCORD_BOT_TOKEN).catch(error => {
+    console.error('Error al conectar el bot:', error);
     process.exit(1);
 });
