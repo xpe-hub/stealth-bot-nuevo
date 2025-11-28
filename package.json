@@ -22,5 +22,14 @@
     "gaming"
   ],
   "author": "xpe.nettt",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/xpe-hub/stealth-bot-nuevo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xpe-hub/stealth-bot-nuevo/issues"
+  },
+  "homepage": "https://github.com/xpe-hub/stealth-bot-nuevo#readme"
 }
