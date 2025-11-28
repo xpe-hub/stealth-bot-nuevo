@@ -353,8 +353,8 @@ client.on('messageCreate', async (message) => {
                     .setColor('#00ff00') // Verde principal
                     .addFields(
                         { name: '🤖 IA Conversacional', value: `Solo mencióname y hablaremos naturalmente\n\`${BOT_PREFIX}ai [mensaje]\` - Consulta específica`, inline: false },
-                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}join\` - Unirme a tu VC\n\`${BOT_PREFIX}leave\` - Salir del VC\n\`${BOT_PREFIX}vc-status\` - Estado de voz\n\`${BOT_PREFIX}clear_chat [canal]\` - Limpiar spam`, inline: false },
-                        { name: '📊 Estado y Utilidades', value: `\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}status\` - Estado del sistema\n\`${BOT_PREFIX}about\` - Acerca del bot`, inline: true },
+                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}join\` - Unirme a tu VC\n\`${BOT_PREFIX}leave\` - Salir del VC\n\`${BOT_PREFIX}vc-status\` - Estado de voz\n\`${BOT_PREFIX}clear_chat [canal/\#canal]\` - Limpiar spam`, inline: false },
+                        { name: '📊 Estado y Utilidades', value: `\`${BOT_PREFIX}add_dev [usuario]\` - Agregar developer\n\`${BOT_PREFIX}status\` - Estado del sistema\n\`${BOT_PREFIX}about\` - Acerca del bot`, inline: true },
                         { name: '🎯 Características IA', value: '• Conversación natural sin comandos\n• Análisis inteligente de texto\n• Respuestas contextuales\n• Sistema de voz integrado\n• Detección automática de amenazas\n• Chat libre en tiempo real', inline: false }
                     )
                     .addFields(
@@ -569,6 +569,24 @@ client.on('messageCreate', async (message) => {
                 // Comando para limpiar spam (solo en canales permitidos)
                 const targetChannelId = args[0] ? args[0].replace(/[<>#]/g, '') : message.channel.id;
                 
+                // Mostrar ayuda si no se especifica canal
+                if (!args[0] && AI_PERMITTED_CHANNELS.length > 1) {
+                    const helpClearEmbed = new EmbedBuilder()
+                        .setTitle('🧹 Limpiar Chat')
+                        .setDescription('Limpiar mensajes del bot en canales IA')
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '💬 Uso', value: `\\`${BOT_PREFIX}clear_chat\\` - Limpiar canal actual\n\\`${BOT_PREFIX}clear_chat #canal\\` - Limpiar canal específico\n\\`${BOT_PREFIX}clear_chat 123456789\\` - Limpiar por ID`, inline: false },
+                            { name: '🔒 Canales Permitidos', value: `Canal Chat IA: ${CHAT_CHANNEL_ID}\nCanal CMD: ${CMD_CHANNEL_ID}`, inline: false },
+                            { name: '⚡ Función', value: 'Elimina solo mensajes del bot (máximo 50)', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Control de Spam' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [helpClearEmbed] });
+                    return;
+                }
+                
                 // Verificar si el canal está en la lista de permitidos
                 if (!AI_PERMITTED_CHANNELS.includes(targetChannelId)) {
                     const notAllowedEmbed = new EmbedBuilder()
@@ -577,7 +595,7 @@ client.on('messageCreate', async (message) => {
                         .setColor('#ff0000')
                         .addFields(
                             { name: '🔒 Canales Permitidos', value: 'Canal de chat IA y canal de comandos', inline: false },
-                            { name: '💡 Alternativa', value: 'Usa el comando directamente en el canal permitido', inline: false }
+                            { name: '💡 Comando', value: `Usa \\`${BOT_PREFIX}clear_chat\\` sin parámetros para ver ayuda`, inline: false }
                         )
                         .setFooter({ text: 'Stealth-AntiCheatX | Control de Spam' })
                         .setTimestamp();
@@ -636,22 +654,7 @@ client.on('messageCreate', async (message) => {
                 }
                 break;
 
-            case 'ping':
-                // Ping básico mejorado
-                const pingEmbed = new EmbedBuilder()
-                    .setTitle('🏓 Pong!')
-                    .setDescription('Latencia del bot Stealth-AntiCheatX')
-                    .setColor('#00ff00')
-                    .addFields(
-                        { name: '⚡ Latencia', value: `${client.ws.ping}ms`, inline: true },
-                        { name: '🤖 Bot', value: `${Math.round(client.shard ? client.shard.ping : 0)}ms`, inline: true },
-                        { name: '🛡️ Estado', value: 'Operacional', inline: true }
-                    )
-                    .setFooter({ text: 'Stealth-AntiCheatX | IA v3.0' })
-                    .setTimestamp();
-                
-                await message.reply({ embeds: [pingEmbed] });
-                break;
+
 
             case 'about':
             case 'info':
@@ -673,6 +676,95 @@ client.on('messageCreate', async (message) => {
                     .setTimestamp();
                 
                 await message.reply({ embeds: [aboutEmbed] });
+                break;
+
+            case 'add_dev':
+            case 'add_developer':
+            case 'dev':
+                // Comando para agregar developers
+                const devUser = args[0];
+                
+                if (!devUser) {
+                    const helpDevEmbed = new EmbedBuilder()
+                        .setTitle('👨‍💻 Agregar Developer')
+                        .setDescription('Añadir un nuevo desarrollador al sistema')
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '💬 Uso', value: `\`${BOT_PREFIX}add_dev @usuario\` - Agregar por mención\n\`${BOT_PREFIX}add_dev 123456789\` - Agregar por ID`, inline: false },
+                            { name: '🔧 Permisos', value: 'Solo el owner del bot puede usar este comando', inline: false },
+                            { name: '⚡ Función', value: 'Permite acceso a comandos de desarrollo futuros', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Developer Tools' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [helpDevEmbed] });
+                    break;
+                }
+                
+                // Solo el owner puede agregar developers
+                if (!isOwner(message.author.id)) {
+                    const noPermsEmbed = new EmbedBuilder()
+                        .setTitle('🚫 Permisos Insuficientes')
+                        .setDescription('Solo el owner del bot puede agregar developers')
+                        .setColor('#ff0000')
+                        .addFields(
+                            { name: '🔒 Acceso', value: 'Comando restringido', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Security' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [noPermsEmbed] });
+                    break;
+                }
+                
+                try {
+                    // Extraer ID del usuario
+                    let devId = devUser.replace(/[<@!>]/g, '');
+                    
+                    // Verificar si es un ID válido
+                    if (!/^\d+$/.test(devId)) {
+                        await message.reply('❌ ID de usuario inválido. Usa una mención (@usuario) o ID numérico.');
+                        return;
+                    }
+                    
+                    // Obtener información del usuario
+                    const devMember = message.guild.members.cache.get(devId);
+                    if (!devMember) {
+                        await message.reply('❌ Usuario no encontrado en el servidor.');
+                        return;
+                    }
+                    
+                    // Agregar a la base de datos de developers (simulado)
+                    const devAddedEmbed = new EmbedBuilder()
+                        .setTitle('✅ Developer Agregado')
+                        .setDescription(`**${devMember.user.tag}** agregado como developer`)
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '👤 Usuario', value: devMember.user.username, inline: true },
+                            { name: '🆔 ID', value: devId, inline: true },
+                            { name: '⚡ Acceso', value: 'Comandos de desarrollo habilitados', inline: true },
+                            { name: '📅 Fecha', value: new Date().toLocaleDateString(), inline: true }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Developer Management' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [devAddedEmbed] });
+                    
+                } catch (devError) {
+                    console.error('[DEV] Error agregando developer:', devError);
+                    
+                    const devErrorEmbed = new EmbedBuilder()
+                        .setTitle('❌ Error Agregando Developer')
+                        .setDescription('No se pudo agregar el developer')
+                        .setColor('#ff0000')
+                        .addFields(
+                            { name: '🔧 Error', value: devError.message, inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Error' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [devErrorEmbed] });
+                }
                 break;
 
             case 'status':
