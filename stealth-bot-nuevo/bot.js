@@ -1,4 +1,5 @@
 require('dotenv').config();
+// ACTUALIZACIÓN FORZADA: 2025-11-28 10:32:21 - CACHE CLEAR
 // Actualizado: 2025-11-28 10:23:19 - Force rebuild for Railway cache clear
 const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const fs = require('fs');
