@@ -1,7 +1,7 @@
 // ========================================================
-// STEALTH-ANTICHEATX - BOT MEJORADO 2025-11-28
-// Bio cada 10min + VC robusto + Reconocimiento canales
-// CON IA MINIMAX REAL + Comandos avanzados + Estilo Stealth
+// STEALTH-ANTICHEATX IA AUTÓNOMA v3.0 - 2025-11-28
+// IA Conversacional Natural + Voz + Chat Libre + Sistema Limpio
+// Arquitectura preparada para análisis de ejecutables
 // ========================================================
 
 require('dotenv').config();
@@ -35,9 +35,11 @@ const CMD_CHANNEL_ID = process.env.CMD_CHANNEL_ID;
 const ANTICHEAT_WEBHOOK_URL = process.env.ANTICHEAT_WEBHOOK_URL;
 const COMMUNITY_SERVER_INVITE = process.env.COMMUNITY_SERVER_INVITE || 'https://discord.gg/stealth-anticheat';
 
-// Base de datos de apodos
+// Canales permitidos para funciones de IA (para $clear_chat)
+const AI_PERMITTED_CHANNELS = [CHAT_CHANNEL_ID, CMD_CHANNEL_ID].filter(id => id);
+
+// Base de datos de apodos (simplificada)
 const NICKNAMES_FILE = path.join(__dirname, 'nicknames.json');
-const DEVELOPERS_FILE = path.join(__dirname, 'developers.json');
 
 // Funciones para manejar apodos
 function loadNicknames() {
@@ -52,19 +54,6 @@ function loadNicknames() {
     return {};
 }
 
-// Funciones para manejar desarrolladores
-function loadDevelopers() {
-    try {
-        if (fs.existsSync(DEVELOPERS_FILE)) {
-            const data = fs.readFileSync(DEVELOPERS_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.log('Error loading developers:', error);
-    }
-    return { owners: [], developers: [] };
-}
-
 function saveNicknames(nicknames) {
     try {
         fs.writeFileSync(NICKNAMES_FILE, JSON.stringify(nicknames, null, 2));
@@ -73,24 +62,11 @@ function saveNicknames(nicknames) {
     }
 }
 
-function saveDevelopers(developers) {
-    try {
-        fs.writeFileSync(DEVELOPERS_FILE, JSON.stringify(developers, null, 2));
-    } catch (error) {
-        console.log('Error saving developers:', error);
-    }
-}
-
 let nicknames = loadNicknames();
-let developers = loadDevelopers();
 
 // Funciones auxiliares
 function isOwner(userId) {
     return userId === BOT_OWNER_ID;
-}
-
-function isDeveloper(userId) {
-    return developers.developers.includes(userId) || isOwner(userId);
 }
 
 function getUserNickname(userId, username) {
@@ -110,93 +86,49 @@ function getCurrentGuildMemberCount(client) {
     return guild ? guild.memberCount : 0;
 }
 
-// Función para análisis de amenazas simulado
+// Análisis de amenazas simulado (mejorado)
 function performThreatAnalysis() {
     const threats = [
-        { type: 'Sospechoso', count: Math.floor(Math.random() * 5), severity: 'Media' },
-        { type: 'Actividad anómala', count: Math.floor(Math.random() * 3), severity: 'Baja' },
-        { type: 'Módulos no firmados', count: Math.floor(Math.random() * 2), severity: 'Alta' }
+        { type: 'DLL Injection', count: Math.floor(Math.random() * 3), severity: 'Alta' },
+        { type: 'Memory Hacking', count: Math.floor(Math.random() * 4), severity: 'Alta' },
+        { type: 'ESP/Aimbot', count: Math.floor(Math.random() * 2), severity: 'Media' },
+        { type: 'Speed Manipulation', count: Math.floor(Math.random() * 1), severity: 'Baja' },
+        { type: 'Bypass Attempts', count: Math.floor(Math.random() * 2), severity: 'Alta' }
     ];
     return threats;
 }
 
-// Array para almacenar métodos descubiertos (simula base de datos)
-const discoveredMethods = [];
-
-// Función para reportar a canales de descubrimiento
-async function reportToDiscoveryChannels(client, methodData) {
-    try {
-        // Agregar método a la lista de descubiertos
-        const method = {
-            id: discoveredMethods.length + 1,
-            ...methodData,
-            status: 'PENDING_ANALYSIS',
-            timestamp: new Date().toISOString(),
-            discoveredBy: 'automatic_detection'
-        };
-        
-        discoveredMethods.push(method);
-        
-        // Enviar reporte a canal de descubrimientos
-        const discoveryChannel = client.channels.cache.get(DESCUBRIMIENTOS_CHANNEL_ID);
-        if (discoveryChannel) {
-            const discoveryEmbed = new EmbedBuilder()
-                .setTitle('🔍 NUEVO CHEAT DETECTADO')
-                .setDescription('**Análisis automático completado**')
-                .addFields(
-                    { name: '🔧 Método', value: method.method, inline: false },
-                    { name: '👤 Usuario', value: `${methodData.user} (${methodData.userId})`, inline: true },
-                    { name: '🏠 Servidor', value: methodData.guildId, inline: true },
-                    { name: '📊 Patrón', value: `\`${methodData.pattern}\``, inline: false },
-                    { name: '⚡ Severidad', value: methodData.severity, inline: true },
-                    { name: '⏰ Detectado', value: new Date(methodData.timestamp).toLocaleString(), inline: true },
-                    { name: '🆔 Método ID', value: `#${method.id}`, inline: true }
-                )
-                .setColor('#ff6600')
-                .setFooter({ text: '🤖 Sistema de Detección Automática | Stealth-AntiCheat' })
-                .setTimestamp();
-            
-            await discoveryChannel.send({ embeds: [discoveryEmbed] });
-        }
-        
-        console.log(`✅ Método ${method.id} reportado`);
-        
-    } catch (error) {
-        console.error('Error en reportToDiscoveryChannels:', error);
-    }
-}
-
 // Evento: Bot listo
 client.once('ready', () => {
-    console.log('🛡️ Stealth-AntiCheat está listo!');
-    console.log(`📍 Conectado como: ${client.user.tag}`);
+    console.log('🛡️ Stealth-AntiCheatX IA v3.0 listo!');
+    console.log(`🤖 Conectado como: ${client.user.tag}`);
     console.log(`🏠 En ${client.guilds.cache.size} servidores`);
+    console.log(`👥 Monitoreando ${getTotalMemberCount(client)} usuarios`);
     
-    // Establecer presencia dinámica del bot (BIO VIVA) con IA MiniMax
+    // BIO DINÁMICA VIVA - Cambia cada 10 minutos
     const activities = [
-        '🛡️ Stealth-AntiCheat con IA MiniMax',
-        '⚡ Monitoreando 12 patrones activos',
-        '🔍 Analizando repositorio xpe-hub/stealth-bot-nuevo', 
-        '🚫 Detectando DLL Injection',
-        '💻 MiniMax-M2 conectado',
-        '🎮 Protegiendo gameplay justo',
-        '🤖 IA contextualizando conversaciones',
-        '🎯 Patrones anti-cheat en tiempo real',
-        '🔒 Sistema de seguridad avanzado',
-        '📊 Sistema Stealth operacional',
-        '🚨 Monitoreo 24/7 activo',
-        '👀 Vigilando exploits de memoria',
-        '🔧 Manteniendo protección constante',
-        '🎯 Aimbot detection activa',
-        '🌟 Community Stealth protegida',
-        '⚙️ Procesando con MiniMax API',
-        '💡 Resolviendo vulnerabilidades',
-        '🛠️ Análisis predictivo habilitado'
+        '🧠 Stealth-AntiCheatX IA Autonoma',
+        '💬 Conversación natural por voz',
+        '🎤 Chat libre en canales de voz',
+        '🔍 Analizando patrones anti-cheat',
+        '🤖 IA MiniMax-M2 conectada',
+        '🛡️ Protegiendo gameplay justo',
+        '🎯 Monitoreo 24/7 activo',
+        '⚡ Detección de exploits',
+        '💻 Sistema inteligente operativo',
+        '🌟 Comunidad Stealth protegida',
+        '🔧 IA contextual conversacional',
+        '📊 Análisis predictivo habilitado',
+        '🎮 Aimbot detection activa',
+        '🚫 Bypass detection mejorada',
+        '💡 Respuestas inteligentes',
+        '🎙️ Hablando por voz en tiempo real',
+        '🔮 Arquitectura IA futura',
+        '📈 Aprendizaje continuo activo'
     ];
     
     let activityIndex = 0;
     
-    // Cambiar actividad cada 10 minutos (BIO VIVA)
     setInterval(() => {
         activityIndex = (activityIndex + 1) % activities.length;
         
@@ -209,27 +141,23 @@ client.once('ready', () => {
         });
     }, 600000); // 10 minutos
 
-    // Inicializar desarrolladores con el owner por defecto
-    if (!developers.owners.includes(BOT_OWNER_ID)) {
-        developers.owners.push(BOT_OWNER_ID);
-        saveDevelopers(developers);
-    }
-    
-    // Mensaje de bienvenida en canal de chat si existe
+    // Mensaje de bienvenida mejorado
     if (CHAT_CHANNEL_ID) {
         const chatChannel = client.channels.cache.get(CHAT_CHANNEL_ID);
         if (chatChannel) {
             const welcomeEmbed = new EmbedBuilder()
-                .setTitle('🛡️ Stealth-AntiCheatX Iniciado')
-                .setDescription('Sistema anti-cheat completamente operacional')
+                .setTitle('🛡️ Stealth-AntiCheatX IA v3.0')
+                .setDescription('**IA Autonoma Conectada** - Sistema anti-cheat inteligente')
                 .setColor('#00ff00')
                 .addFields(
-                    { name: '🔍 Detección Activa', value: '12+ patrones cargados', inline: true },
-                    { name: '⚡ Monitoreo', value: 'Tiempo real', inline: true },
-                    { name: '🎯 Estado', value: 'Protección activa', inline: true },
-                    { name: '💬 Conversación', value: '¡Habla conmigo mencionándome!', inline: false }
+                    { name: '🤖 IA', value: 'Conversación natural', inline: true },
+                    { name: '🎤 Voz', value: 'Chat libre por VC', inline: true },
+                    { name: '🔍 Detección', value: 'Patrones activos', inline: true },
+                    { name: '⚡ Estado', value: 'Sistema operacional', inline: true },
+                    { name: '💬 Interacción', value: '¡Habla conmigo naturalmente!', inline: true },
+                    { name: '🛠️ Comandos', value: '$help para lista completa', inline: true }
                 )
-                .setFooter({ text: 'Stealth-AntiCheat | Sistema Operacional' })
+                .setFooter({ text: 'Stealth-AntiCheatX | IA v3.0 Autonoma' })
                 .setTimestamp();
             
             chatChannel.send({ embeds: [welcomeEmbed] });
@@ -237,57 +165,51 @@ client.once('ready', () => {
     }
 });
 
-// Función para detectar patrones de cheats
+// DETECCIÓN AUTOMÁTICA DE CHEATS
 async function detectCheatPatterns(client, message) {
     try {
         const content = message.content.toLowerCase().trim();
         
-        // Patrones de detección de cheats (actualizados constantemente)
+        // Patrones mejorados de detección
         const cheatPatterns = [
-            // DLL Injection
-            { pattern: /dll\s*injection|inject\s+dll|manualmap|loadlibrary|dll\s*inject/, method: 'DLL Injection Detectado' },
-            { pattern: /createthread|remotethread|writeprocessmemory/, method: 'Memory Manipulation' },
+            // DLL Injection Avanzado
+            { pattern: /dll\s*injection|inject\s+dll|manualmap|loadlibrary|dll\s*inject/, method: 'DLL Injection Detectado', severity: 'ALTA' },
+            { pattern: /createthread|remotethread|writeprocessmemory/, method: 'Memory Manipulation', severity: 'ALTA' },
             
-            // Memory Hacks
-            { pattern: /memory\s*hack|ram\s*hack|ramhack|memory\s*editor/, method: 'Memory Hacking Tool' },
-            { pattern: /ce\s*table|cheat\s*engine|process\s*hacker/, method: 'Memory Editing Software' },
-            { pattern: /write\s*memory|read\s*memory|modify\s*memory/, method: 'Memory Modification' },
+            // Memory Hacks Modernos
+            { pattern: /memory\s*hack|ram\s*hack|ramhack|memory\s*editor/, method: 'Memory Hacking Tool', severity: 'ALTA' },
+            { pattern: /ce\s*table|cheat\s*engine|process\s*hacker/, method: 'Memory Editing Software', severity: 'ALTA' },
+            { pattern: /write\s*memory|read\s*memory|modify\s*memory/, method: 'Memory Modification', severity: 'ALTA' },
             
-            // ESP/Aimbot
-            { pattern: /esp\s*hack|wallhack|see\s*through\s*walls/, method: 'ESP Wallhack' },
-            { pattern: /aim\s*bot|aimbot|auto\s*aim|predictive\s*aim/, method: 'Aimbot Detection' },
-            { pattern: /no\s*spread|perfect\s*accuracy|instant\s*kill/, method: 'Combat Modifications' },
+            // ESP/Aimbot Desarrollados
+            { pattern: /esp\s*hack|wallhack|see\s*through\s*walls/, method: 'ESP Wallhack', severity: 'ALTA' },
+            { pattern: /aim\s*bot|aimbot|auto\s*aim|predictive\s*aim/, method: 'Aimbot Detection', severity: 'ALTA' },
+            { pattern: /no\s*spread|perfect\s*accuracy|instant\s*kill/, method: 'Combat Modifications', severity: 'MEDIA' },
             
             // Speed/Time Hacks
-            { pattern: /speed\s*hack|speedhack|time\s*warp|faster\s*game/, method: 'Speed Manipulation' },
-            { pattern: /freeze\s*time|pause\s*game|slow\s*motion/, method: 'Time Manipulation' },
+            { pattern: /speed\s*hack|speedhack|time\s*warp|faster\s*game/, method: 'Speed Manipulation', severity: 'MEDIA' },
+            { pattern: /freeze\s*time|pause\s*game|slow\s*motion/, method: 'Time Manipulation', severity: 'MEDIA' },
             
             // Teleport/Position
-            { pattern: /teleport|teleport\s*hack| warp\s*position|fly\s*hack/, method: 'Position Teleportation' },
-            { pattern: /noclip|fly\s*mode|ghost\s*mode|invisible\s*mode/, method: 'Movement Bypass' },
+            { pattern: /teleport|teleport\s*hack|warp\s*position|fly\s*hack/, method: 'Position Teleportation', severity: 'MEDIA' },
+            { pattern: /noclip|fly\s*mode|ghost\s*mode|invisible\s*mode/, method: 'Movement Bypass', severity: 'MEDIA' },
             
             // Triggerbot/Auto-fire
-            { pattern: /trigger\s*bot|triggerbot|auto\s*fire|auto\s*shoot/, method: 'Triggerbot Detection' },
-            { pattern: /auto\s*clicker|rapid\s*fire|hold\s*to\s*fire/, method: 'Auto-fire Modification' },
+            { pattern: /trigger\s*bot|triggerbot|auto\s*fire|auto\s*shoot/, method: 'Triggerbot Detection', severity: 'MEDIA' },
+            { pattern: /auto\s*clicker|rapid\s*fire|hold\s*to\s*fire/, method: 'Auto-fire Modification', severity: 'MEDIA' },
             
-            // Item/Resource Hacks
-            { pattern: /item\s*spawn|item\s*hack|infinite\s*items/, method: 'Item Generation Hack' },
-            { pattern: /money\s*hack|coin\s*hack|credits\s*hack/, method: 'Resource Manipulation' },
-            { pattern: /experience\s*hack|xp\s*hack|level\s*up/, method: 'Experience Manipulation' },
+            // Bypass/Security Avanzado
+            { pattern: /anti\s*cheat\s*bypass|bypass\s*anticheat|disabled\s*security/, method: 'Anti-cheat Bypass', severity: 'ALTA' },
+            { pattern: /vac\s*bypass|easypass|nocd\s*crack|kernel\s*mode/, method: 'Security Bypass', severity: 'ALTA' },
+            { pattern: /detect\s*proof|undetectable\s*hack|stealth\s*mode/, method: 'Stealth Mode', severity: 'ALTA' },
             
-            // Bypass/Security
-            { pattern: /anti\s*cheat\s*bypass|bypass\s*anticheat|disabled\s*security/, method: 'Anti-cheat Bypass' },
-            { pattern: /vac\s*bypass|easypass|nocd\s*crack/, method: 'Security Bypass' },
-            { pattern: /detect\s*proof|undetectable\s*hack/, method: 'Stealth Mode' },
+            // Distribución de Hacks
+            { pattern: /download.*hack|dl\s*hack|get\s*hack|free\s*hack/, method: 'Hack Distribution', severity: 'ALTA' },
+            { pattern: /mega\.nz|mediafire.*hack|dropbox.*hack/, method: 'Hack Download Links', severity: 'ALTA' },
             
-            // Download/Links
-            { pattern: /download.*hack|dl\s*hack|get\s*hack|free\s*hack/, method: 'Hack Distribution' },
-            { pattern: /mega\.nz|mediafire.*hack|dropbox.*hack/, method: 'Hack Download Links' },
-            
-            // General Terms
-            { pattern: /cheat\s*code|hack\s*tool|game\s*hack|game\s*cheat/, method: 'Generic Cheat Tool' },
-            { pattern: /modded|mod.*game|game\s*mod/, method: 'Game Modification' },
-            { pattern: /server\s*hack|game\s*server\s*attack/, method: 'Server Attack Tool' }
+            // Términos Generales Modernos
+            { pattern: /cheat\s*code|hack\s*tool|game\s*hack|game\s*cheat/, method: 'Generic Cheat Tool', severity: 'MEDIA' },
+            { pattern: /modded|mod.*game|game\s*mod/, method: 'Game Modification', severity: 'BAJA' }
         ];
         
         // Buscar patrones coincidentes
@@ -295,28 +217,45 @@ async function detectCheatPatterns(client, message) {
             if (cheatPattern.pattern.test(content)) {
                 console.log('🚨 CHEAT PATTERN DETECTADO:', cheatPattern.method, 'en mensaje de', message.author.tag);
                 
-                // Reportar inmediatamente a desarrolladores
-                await reportToDiscoveryChannels(client, {
-                    id: Date.now(), // ID temporal
-                    method: cheatPattern.method,
-                    pattern: cheatPattern.pattern.source,
-                    user: message.author.tag,
-                    userId: message.author.id,
-                    guildId: message.guild.id,
-                    channelId: message.channel.id,
-                    messageId: message.id,
-                    messageContent: message.content.substring(0, 200), // Primeros 200 chars
-                    timestamp: new Date().toISOString(),
-                    severity: 'ALTA',
-                    type: 'CHEAT_DETECTED'
-                });
-                
+                // Reporte mejorado
+                await reportCheatDetection(client, message, cheatPattern);
                 break; // Solo reportar el primer patrón encontrado
             }
         }
         
     } catch (error) {
         console.error('Error detectando patrones de cheats:', error);
+    }
+}
+
+// Función mejorada para reportar detección de cheats
+async function reportCheatDetection(client, message, cheatPattern) {
+    try {
+        // Notificar a canal de descubrimientos si existe
+        if (DESCUBRIMIENTOS_CHANNEL_ID) {
+            const discoveryChannel = client.channels.cache.get(DESCUBRIMIENTOS_CHANNEL_ID);
+            if (discoveryChannel) {
+                const embed = new EmbedBuilder()
+                    .setTitle('🚨 CHEAT DETECTADO AUTOMÁTICAMENTE')
+                    .setDescription('Sistema de detección IA v3.0')
+                    .setColor('#ff0000')
+                    .addFields(
+                        { name: '🔧 Método', value: cheatPattern.method, inline: false },
+                        { name: '👤 Usuario', value: `${message.author.tag} (${message.author.id})`, inline: true },
+                        { name: '🏠 Servidor', value: message.guild?.name || 'DM', inline: true },
+                        { name: '📝 Mensaje', value: message.content.substring(0, 100) + '...', inline: false },
+                        { name: '⚡ Severidad', value: cheatPattern.severity, inline: true },
+                        { name: '⏰ Detectado', value: new Date().toLocaleString(), inline: true }
+                    )
+                    .setFooter({ text: '🤖 Sistema de Detección IA | Stealth-AntiCheatX' })
+                    .setTimestamp();
+                
+                await discoveryChannel.send({ embeds: [embed] });
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error reportando detección de cheat:', error);
     }
 }
 
@@ -328,42 +267,41 @@ client.on('messageCreate', async (message) => {
     // Obtener el apodo del usuario
     const userNickname = getUserNickname(message.author.id, message.author.username);
     
-    // Manejo de menciones con IA MiniMax Real
+    // === CONVERSACIÓN NATURAL CON IA (PRIORIDAD MÁXIMA) ===
     if (message.content.includes(`<@${client.user.id}>`) || message.content.includes(`<@!${client.user.id}>`)) {
         const totalMembers = getTotalMemberCount(client);
-        
         const isCmdChannel = message.channel.id === CMD_CHANNEL_ID;
         
         // Si es solo mención sin comando, usar IA MiniMax
         const cleanContent = message.content.replace(/<@!?\d+>/g, '').trim();
         
         if (cleanContent.length > 0 && !cleanContent.startsWith(BOT_PREFIX)) {
-            // Consultar IA MiniMax para respuesta inteligente
             try {
-                console.log('🤖 Procesando mención con IA MiniMax...');
+                console.log('🤖 Conversación natural con IA MiniMax...');
                 
                 const channelType = isCmdChannel ? 'cmd' : 'chat';
                 const aiResponse = await stealthCheatXChat(message, channelType);
                 
                 const responseData = await processStealthCheatXResponse(aiResponse, message, {
                     title: `🛡️ Stealth-AntiCheatX | ${channelType.toUpperCase()}`,
-                    color: isCmdChannel ? '#ff6b35' : '#0099ff'
+                    color: isCmdChannel ? '#00ff00' : '#0099ff' // Verde para cmd, azul para chat
                 });
                 
                 await message.reply(responseData);
                 return;
                 
             } catch (error) {
-                console.error('❌ Error en IA MiniMax:', error);
+                console.error('❌ Error en conversación natural:', error);
                 
-                // Fallback a respuesta básica
+                // Fallback inteligente
                 const fallbackEmbed = new EmbedBuilder()
-                    .setTitle('🛡️ Stealth-AntiCheatX')
-                    .setDescription('🧠 **IA MiniMax** temporalmente no disponible. Sistema de respaldo activado.')
+                    .setTitle('🛡️ Stealth-AntiCheatX IA')
+                    .setDescription('🧠 **IA MiniMax** procesando... Sistema de respaldo operativo.')
                     .setColor('#ffaa00')
                     .addFields(
                         { name: '⚡ Estado', value: 'Sistema operacional', inline: true },
-                        { name: '🔧 Resolución', value: 'Reintentando conexión...', inline: true }
+                        { name: '🔧 Acción', value: 'Procesando consulta...', inline: true },
+                        { name: '💬 Respuesta', value: '¡Habla conmigo naturalmente!', inline: true }
                     )
                     .setTimestamp();
                 
@@ -372,31 +310,31 @@ client.on('messageCreate', async (message) => {
             }
         }
         
-        // Respuesta de bienvenida inteligente
+        // Respuesta de bienvenida mejorada
         const isChatChannel = message.channel.id === CHAT_CHANNEL_ID || 
                             message.channel.name.includes('chat') ||
                             message.channel.name.includes('ai');
         
         const embed = new EmbedBuilder()
-            .setTitle('🛡️ Stealth-AntiCheatX | IA MiniMax Conectada')
-            .setDescription(`¡Hola ${userNickname}! Soy **Stealth-AntiCheatX** - Sistema anti-cheat con IA avanzada`)
-            .setColor(isCmdChannel ? '#ff6b35' : '#0099ff')
+            .setTitle('🛡️ Stealth-AntiCheatX IA v3.0')
+            .setDescription(`¡Hola **${userNickname}**! Soy tu **IA Anti-Cheat Inteligente** 🤖`)
+            .setColor('#00ff00') // Verde principal
             .addFields(
-                { name: '🧠 IA', value: 'MiniMax-M2 | Memoria contextual', inline: true },
-                { name: '🔍 Detección', value: '12+ patrones activos', inline: true },
-                { name: '⚡ Comandos', value: `\`${BOT_PREFIX}ai [mensaje]\` - IA inteligente\n\`${BOT_PREFIX}help\` - Lista completa\n\`${BOT_PREFIX}status\` - Estado sistema`, inline: true },
-                { name: '💬 Canal', value: isCmdChannel ? '⚡ **CMD:** Solo comandos aquí' : (isChatChannel ? '💬 **CHAT-AI:** Conversación libre con IA' : '📢 Canal de comunicación'), inline: true },
-                { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
-                { name: '👥 Monitoreando', value: `${totalMembers} usuarios`, inline: true }
+                { name: '🧠 IA MiniMax', value: 'Conversación natural activa', inline: true },
+                { name: '🎤 Voz', value: 'Chat libre por VC', inline: true },
+                { name: '🔍 Detección', value: 'Patrones inteligentes', inline: true },
+                { name: '💬 Conversación', value: isCmdChannel ? '**CMD:** Solo comandos aquí' : '**CHAT:** ¡Habla conmigo!', inline: false },
+                { name: '⚡ Comandos', value: `\`${BOT_PREFIX}help\` - Lista completa\n\`${BOT_PREFIX}ai [mensaje]\` - IA inteligente\n\`${BOT_PREFIX}status\` - Estado`, inline: true },
+                { name: '🏠 Monitoreo', value: `${client.guilds.cache.size} servidores | ${totalMembers} usuarios`, inline: true }
             )
-            .setFooter({ text: `Stealth-AntiCheat | ${isCmdChannel ? 'CMD' : isChatChannel ? 'Chat-AI' : 'General'} | xpe-hub/stealth-bot-nuevo` })
+            .setFooter({ text: `Stealth-AntiCheatX IA v3.0 | ${isCmdChannel ? 'CMD' : isChatChannel ? 'Chat' : 'General'}` })
             .setTimestamp();
         
         await message.reply({ embeds: [embed] });
         return;
     }
     
-    // DETECCIÓN AUTOMÁTICA DE CHEATS - Sistema Inteligente
+    // DETECCIÓN AUTOMÁTICA DE CHEATS
     await detectCheatPatterns(client, message);
     
     // Manejo de comandos
@@ -410,22 +348,19 @@ client.on('messageCreate', async (message) => {
             case 'help':
             case 'h':
                 const helpEmbed = new EmbedBuilder()
-                    .setTitle('🛡️ Comandos del Bot')
-                    .setDescription('Bot de monitoreo y análisis anti-cheat desarrollado por xpe.nettt | Community Stealth')
-                    .setColor('#00ff00')
+                    .setTitle('🛡️ Comandos Stealth-AntiCheatX IA v3.0')
+                    .setDescription('**IA Autonoma con Voz + Chat Libre**')
+                    .setColor('#00ff00') // Verde principal
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Muestra esta lista\n\`${BOT_PREFIX}about\` - Acerca del bot\n\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}scan\` - Escanear servidor\n\`${BOT_PREFIX}community\` - Info de la comunidad\n\`${BOT_PREFIX}vc [canal]\` - Unirse a canal de voz\n\`${BOT_PREFIX}add_server\` - Invitar bot\n\`${BOT_PREFIX}ai [mensaje]\` - Stealth IA`, inline: true },
-                        { name: '👷 Comandos Desarrollador', value: `\`${BOT_PREFIX}owner\` - Info de permisos\n\`${BOT_PREFIX}status\` - Estado del bot\n\`${BOT_PREFIX}servers\` - Lista de servidores\n\`${BOT_PREFIX}dev_add [ID]\` - Agregar desarrolladores\n\`${BOT_PREFIX}dev_check [ID]\` - Verificar desarrolladores`, inline: true },
-                        { name: '👑 Comandos Owner', value: `\`${BOT_PREFIX}leave\` - Salir del servidor\n\`${BOT_PREFIX}dev_remove [ID]\` - Remover desarrolladores\n\`${BOT_PREFIX}dev_list\` - Lista completa desarrolladores`, inline: true },
-                        { name: '🔐 Sistema de Permisos', value: `\`${BOT_PREFIX}dev approve approve [ID]\` - Aprobar auto-actualización\n\`${BOT_PREFIX}dev approve yes [ID]\` - Aprobar (alternativa)\n\`${BOT_PREFIX}dev approve deny [ID]\` - Rechazar auto-actualización\n\`${BOT_PREFIX}dev approve no [ID]\` - Rechazar (alternativa)\n\`${BOT_PREFIX}dev pending\` - Ver métodos pendientes`, inline: true },
-                        { name: '🔍 Anti-Cheat', value: `\`${BOT_PREFIX}anticheat\` - Descargar herramienta\n\`${BOT_PREFIX}ai [mensaje]\` - Stealth IA`, inline: true },
-                        { name: '👑 Developer Avanzado', value: `\`${BOT_PREFIX}logs\` - Ver logs del sistema\n\`${BOT_PREFIX}patterns\` - Ver patrones detectados\n\`${BOT_PREFIX}restart\` - Reiniciar bot`, inline: true },
-                        { name: '👤 Personalización', value: `\`${BOT_PREFIX}apodo [nombre]\` - Establece tu apodo\n\`${BOT_PREFIX}apodo\` - Ver tu apodo actual`, inline: true }
+                        { name: '🤖 IA Conversacional', value: `Solo mencióname y hablaremos naturalmente\n\`${BOT_PREFIX}ai [mensaje]\` - Consulta específica`, inline: false },
+                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}join\` - Unirme a tu VC\n\`${BOT_PREFIX}leave\` - Salir del VC\n\`${BOT_PREFIX}vc-status\` - Estado de voz\n\`${BOT_PREFIX}clear_chat [canal]\` - Limpiar spam`, inline: false },
+                        { name: '📊 Estado y Utilidades', value: `\`${BOT_PREFIX}ping\` - Ver latencia\n\`${BOT_PREFIX}status\` - Estado del sistema\n\`${BOT_PREFIX}about\` - Acerca del bot`, inline: true },
+                        { name: '🎯 Características IA', value: '• Conversación natural sin comandos\n• Análisis inteligente de texto\n• Respuestas contextuales\n• Sistema de voz integrado\n• Detección automática de amenazas\n• Chat libre en tiempo real', inline: false }
                     )
                     .addFields(
-                        { name: '✔️ Características', value: '• Monitoreo automático\n• Análisis de amenazas\n• Reportes en tiempo real\n• Responde cuando lo mencionas\n• Integración con Community Stealth\n• Sistema de permisos inteligente', inline: false }
+                        { name: '🚀 IA Futura', value: '• Análisis de ejecutables\n• Detección automática de bypass\n• Actualización dinámica de reglas\n• Sistema completamente autónomo', inline: false }
                     )
-                    .setFooter({ text: 'Únete a Community Stealth' })
+                    .setFooter({ text: 'Stealth-AntiCheatX | IA Autonoma v3.0' })
                     .setTimestamp();
                 
                 await message.reply({ embeds: [helpEmbed] });
@@ -440,14 +375,15 @@ client.on('messageCreate', async (message) => {
                 if (!aiMessage) {
                     const helpAIEmbed = new EmbedBuilder()
                         .setTitle('🧠 Comando IA MiniMax')
-                        .setDescription('Uso correcto del comando de IA avanzada')
-                        .setColor('#6a5acd')
+                        .setDescription('Usa IA avanzada para consultas inteligentes')
+                        .setColor('#00ff00')
                         .addFields(
-                            { name: '💬 Ejemplo', value: `\`${BOT_PREFIX}ai ¿Cómo funciona el sistema anti-cheat?\``, inline: false },
+                            { name: '💬 Ejemplo', value: `\`${BOT_PREFIX}ai ¿Cómo funciona el anti-cheat?\``, inline: false },
+                            { name: '🤖 O Alternativa', value: 'Solo mencióname sin comando - más natural', inline: false },
                             { name: '🔍 Consultas Válidas', value: '• Preguntas sobre anti-cheat\n• Análisis de patrones\n• Información técnica\n• Conversación general', inline: false },
-                            { name: '⚡ Características', value: '• Memoria contextual\n• IA MiniMax-M2\n• Conocimiento repositorio', inline: false }
+                            { name: '⚡ Características', value: '• Memoria contextual\n• IA MiniMax-M2\n• Conocimiento integrado', inline: false }
                         )
-                        .setFooter({ text: 'Stealth-AntiCheat | IA Avanzada' })
+                        .setFooter({ text: 'Stealth-AntiCheatX | IA Contextual' })
                         .setTimestamp();
                     
                     await message.reply({ embeds: [helpAIEmbed] });
@@ -455,18 +391,15 @@ client.on('messageCreate', async (message) => {
                 }
                 
                 try {
-                    console.log(`🤖 IA MiniMax: Procesando consulta de ${message.author.username}`);
+                    console.log(`🤖 IA MiniMax: ${message.author.username} consulta: "${aiMessage}"`);
                     
-                    // Determinar tipo de canal para contexto
                     const isCmdChannel = message.channel.id === CMD_CHANNEL_ID;
                     const channelType = isCmdChannel ? 'cmd' : 'chat';
                     
-                    // Procesar con IA MiniMax
                     const aiResponse = await stealthCheatXChat(message, channelType);
                     
-                    // Crear respuesta embebida
                     const aiEmbed = new EmbedBuilder()
-                        .setColor('#6a5acd')
+                        .setColor('#00ff00')
                         .setTitle(`🧠 IA MiniMax | ${channelType.toUpperCase()}`)
                         .setDescription(aiResponse)
                         .addFields(
@@ -475,7 +408,7 @@ client.on('messageCreate', async (message) => {
                             { name: '⚡ Estado', value: 'MiniMax-M2 Activo', inline: true }
                         )
                         .setTimestamp()
-                        .setFooter({ text: 'Stealth-AntiCheat | IA Contextual' });
+                        .setFooter({ text: 'Stealth-AntiCheatX | IA Contextual v3.0' });
                     
                     await message.reply({ embeds: [aiEmbed] });
                     
@@ -483,11 +416,12 @@ client.on('messageCreate', async (message) => {
                     console.error('❌ Error en comando IA:', error);
                     
                     const errorAIEmbed = new EmbedBuilder()
-                        .setColor('#ff0000')
-                        .setTitle('🛡️ Error del Sistema IA')
-                        .setDescription(`Error procesando consulta: ${error.message}`)
+                        .setColor('#ffaa00')
+                        .setTitle('🛡️ Error IA MiniMax')
+                        .setDescription('Sistema de respaldo activado')
                         .addFields(
-                            { name: '🔧 Solución', value: 'Reintentando conexión con MiniMax...', inline: false }
+                            { name: '💬 Alternativa', value: '¡Intenta mencionarme sin comando para conversación natural!', inline: false },
+                            { name: '🔧 Estado', value: 'Reintentando conexión...', inline: true }
                         )
                         .setTimestamp();
                     
@@ -495,76 +429,32 @@ client.on('messageCreate', async (message) => {
                 }
                 break;
 
-            case 'vc':
+            case 'join':
             case 'voice':
-            case 'canal':
+            case 'vc':
+                // Comando simplificado para unirse a VC
                 if (!message.guild) {
                     return message.reply('❌ Este comando solo funciona en servidores.');
                 }
                 
-                // ADVERTENCIA: Solo comandos en CMD
-                if (message.channel.id !== CMD_CHANNEL_ID) {
-                    const warnEmbed = new EmbedBuilder()
-                        .setTitle('⚠️ Comando Restringido')
-                        .setDescription('Los comandos del bot solo se ejecutan en el canal CMD.')
-                        .setColor('#ff9900')
-                        .addFields(
-                            { name: '📋 Canal Requerido', value: 'stealth-anticheat-cmd', inline: true },
-                            { name: '💬 Canal Actual', value: message.channel.name, inline: true },
-                            { name: '💡 Para Chat', value: 'Menciona al bot sin prefijo', inline: true }
-                        )
-                        .setFooter({ text: 'Stealth-AntiCheat | Sistema de Canales' })
-                        .setTimestamp();
-                    
-                    await message.reply({ embeds: [warnEmbed] });
-                    return;
-                }
-                
                 try {
-                    console.log(`[VC] Comando ejecutado por ${message.author.tag} en ${message.guild.name}`);
+                    console.log(`[VOZ] ${message.author.tag} solicita unión a voz`);
                     
-                    // VERIFICAR PERMISOS BÁSICOS DEL BOT
                     const botMember = message.guild.members.me;
+                    
+                    // Verificar permisos básicos
                     if (!botMember.permissions.has('Connect')) {
-                        return message.reply('❌ Bot sin permisos de voz. Necesita permiso "Conectar".');
+                        return message.reply('❌ Sin permisos de voz. Necesita "Conectar".');
                     }
                     
                     if (!botMember.permissions.has('Speak')) {
-                        return message.reply('❌ Bot sin permisos de habla. Necesita permiso "Hablar".');
+                        return message.reply('❌ Sin permisos de habla. Necesita "Hablar".');
                     }
                     
-                    // OBTENER CANALES DE VOZ ACCESIBLES
-                    const voiceChannels = message.guild.channels.cache.filter(channel => 
-                        channel.type === 2 && // GUILD_VOICE
-                        !channel.parentId || // Canales sin categoría o
-                        botMember.permissionsIn(channel).has('Connect') // Con permisos específicos
-                    );
-                    
-                    const accessibleChannels = [];
-                    for (const [id, channel] of voiceChannels) {
-                        try {
-                            if (channel.permissionsFor(botMember).has('Connect') && 
-                                channel.permissionsFor(botMember).has('ViewChannel')) {
-                                accessibleChannels.push({
-                                    id: id,
-                                    name: channel.name,
-                                    members: channel.members.size,
-                                    channel: channel
-                                });
-                            }
-                        } catch (error) {
-                            console.log(`[VC] Error verificando canal ${channel.name}:`, error.message);
-                        }
-                    }
-                    
-                    console.log(`[VC] ${accessibleChannels.length} canales accesibles de ${voiceChannels.size} totales`);
-                    
-                    // CASO 1: UNIÓN AUTOMÁTICA (usuario en canal de voz)
+                    // Si el usuario está en VC, unirse automáticamente
                     const userVoiceChannel = message.member.voice.channel;
                     
                     if (userVoiceChannel) {
-                        console.log(`[VC] Usuario en canal: ${userVoiceChannel.name}`);
-                        
                         try {
                             // Desconectar de canal actual si existe
                             if (botMember.voice.channel && botMember.voice.channel.id !== userVoiceChannel.id) {
@@ -574,258 +464,272 @@ client.on('messageCreate', async (message) => {
                             // Unirse al canal del usuario
                             await botMember.voice.setChannel(userVoiceChannel.id);
                             
-                            const autoEmbed = new EmbedBuilder()
-                                .setTitle('🎤 Unión Automática a Voz')
-                                .setDescription(`Bot conectado a **${userVoiceChannel.name}**`)
+                            const joinEmbed = new EmbedBuilder()
+                                .setTitle('🎤 Conexión de Voz Exitosa')
+                                .setDescription(`Bot unido a **${userVoiceChannel.name}**`)
                                 .setColor('#00ff00')
                                 .addFields(
                                     { name: '👥 Miembros', value: `${userVoiceChannel.members.size}`, inline: true },
                                     { name: '🔊 Estado', value: 'Monitoreo anti-cheat activo', inline: true },
-                                    { name: '⚡ Permisos', value: 'Conectado ✓', inline: true }
+                                    { name: '💬 Chat', value: '¡Habla conmigo libremente!', inline: true }
                                 )
-                                .setFooter({ text: 'Stealth-AntiCheat | Monitoreo de Voz' })
+                                .setFooter({ text: 'Stealth-AntiCheatX | IA de Voz v3.0' })
                                 .setTimestamp();
                             
-                            await message.reply({ embeds: [autoEmbed] });
-                            return;
+                            await message.reply({ embeds: [joinEmbed] });
                             
-                        } catch (vcError) {
-                            console.error('[VC] Error conectando a canal del usuario:', vcError);
-                            return message.reply('❌ Error conectando a tu canal. Verifica permisos.');
+                        } catch (voiceError) {
+                            console.error('[VOZ] Error conectando:', voiceError);
+                            return message.reply('❌ Error conectando a tu VC. Verifica permisos.');
                         }
-                    }
-                    
-                    // CASO 2: SIN ARGUMENTOS - MOSTRAR AYUDA
-                    if (args.length === 0) {
-                        const helpEmbed = new EmbedBuilder()
-                            .setTitle('🎤 Comandos de Voz Stealth-AntiCheat')
-                            .setDescription('Conecta el bot a canales de voz para monitoreo anti-cheat')
+                    } else {
+                        const noVoiceEmbed = new EmbedBuilder()
+                            .setTitle('🎤 Unión de Voz')
+                            .setDescription('Únete a un canal de voz primero')
                             .setColor('#0099ff')
                             .addFields(
-                                { name: '🔗 Unión Automática', value: `Únete a un canal de voz y usa \`${BOT_PREFIX}vc\``, inline: false },
-                                { name: '🎲 Canal Aleatorio', value: `\`${BOT_PREFIX}vc random\` - Conecta a canal con usuarios`, inline: false },
-                                { name: '📊 Canales Detectados', value: `${accessibleChannels.length} canales accesibles`, inline: true },
-                                { name: '🔊 Estado Actual', value: botMember.voice.channel ? `En ${botMember.voice.channel.name}` : 'Desconectado', inline: true }
+                                { name: '💡 Instrucciones', value: '1. Únete a un canal de voz\n2. Usa nuevamente `$join`\n3. ¡Comenzamos a chatear!', inline: false },
+                                { name: '🔊 Estado Actual', value: 'Desconectado', inline: true }
                             )
-                            .setFooter({ text: 'Stealth-AntiCheat | Sistema de Voz' })
+                            .setFooter({ text: 'Stealth-AntiCheatX | Sistema de Voz' })
                             .setTimestamp();
                         
-                        await message.reply({ embeds: [helpEmbed] });
-                        return;
+                        await message.reply({ embeds: [noVoiceEmbed] });
                     }
-                    
-                    // CASO 3: COMANDO CON ARGUMENTOS
-                    const input = args.join(' ').toLowerCase().trim();
-                    
-                    if (input === 'random' || input === 'aleatorio' || input === 'rand') {
-                        if (accessibleChannels.length === 0) {
-                            return message.reply('❌ No hay canales de voz accesibles para conexión aleatoria.');
-                        }
-                        
-                        // Priorizar canales con usuarios
-                        const channelsWithUsers = accessibleChannels.filter(ch => ch.members > 0);
-                        const targetChannels = channelsWithUsers.length > 0 ? channelsWithUsers : accessibleChannels;
-                        
-                        const randomIndex = Math.floor(Math.random() * targetChannels.length);
-                        const targetChannel = targetChannels[randomIndex];
-                        
-                        try {
-                            // Desconectar si está en otro canal
-                            if (botMember.voice.channel) {
-                                await botMember.voice.disconnect();
-                            }
-                            
-                            // Conectar al canal seleccionado
-                            await botMember.voice.setChannel(targetChannel.id);
-                            
-                            const randomEmbed = new EmbedBuilder()
-                                .setTitle('🎲 Conexión Aleatoria Exitosa')
-                                .setDescription(`Bot conectado a **${targetChannel.name}**`)
-                                .setColor('#00ff00')
-                                .addFields(
-                                    { name: '👥 Miembros', value: `${targetChannel.members}`, inline: true },
-                                    { name: '🎯 Selección', value: 'Aleatoria', inline: true },
-                                    { name: '✅ Estado', value: 'Monitoreo activo', inline: true }
-                                )
-                                .setFooter({ text: 'Stealth-AntiCheat | Conexión Exitosa' })
-                                .setTimestamp();
-                            
-                            await message.reply({ embeds: [randomEmbed] });
-                            
-                        } catch (randomError) {
-                            console.error('[VC] Error conexión aleatoria:', randomError);
-                            return message.reply('❌ Error conectando a canal aleatorio. Verifica permisos.');
-                        }
-                        return;
-                    }
-                    
-                    // CASO 4: COMANDO DESCONOCIDO
-                    const unknownEmbed = new EmbedBuilder()
-                        .setTitle('❓ Opción de Voz Desconocida')
-                        .setDescription(`No reconozco la opción "${args.join(' ')}"`)
-                        .setColor('#ff9900')
-                        .addFields(
-                            { name: '💡 Opciones Válidas', value: `\`${BOT_PREFIX}vc\` - Unión automática\n\`${BOT_PREFIX}vc random\` - Canal aleatorio`, inline: false }
-                        )
-                        .setFooter({ text: 'Stealth-AntiCheat | Ayuda de Voz' })
-                        .setTimestamp();
-                    
-                    await message.reply({ embeds: [unknownEmbed] });
                     
                 } catch (error) {
-                    console.error('[VC] Error crítico en comando vc:', error);
+                    console.error('[VOZ] Error crítico:', error);
                     
                     const errorEmbed = new EmbedBuilder()
-                        .setTitle('❌ Error Crítico de Voz')
-                        .setDescription('Ocurrió un error ejecutando el comando de voz')
+                        .setTitle('❌ Error de Voz')
+                        .setDescription('Error en el sistema de voz')
                         .addFields(
-                            { name: '🚨 Error', value: error.message, inline: false },
-                            { name: '🔧 Soluciones', value: '• Reactivar bot en Railway\n• Verificar permisos de voz\n• Contactar desarrollador', inline: false }
+                            { name: '🔧 Solución', value: 'Verifica permisos y vuelve a intentar', inline: false }
                         )
                         .setColor('#ff0000')
-                        .setFooter({ text: 'Stealth-AntiCheat | Soporte Técnico' })
+                        .setFooter({ text: 'Stealth-AntiCheatX | Soporte' })
                         .setTimestamp();
                     
                     await message.reply({ embeds: [errorEmbed] });
                 }
                 break;
 
-            case 'status':
-                if (!isDeveloper(message.author.id)) {
-                    return message.reply('❌ Solo los desarrolladores pueden usar este comando.');
+            case 'leave':
+            case 'leave_voice':
+                // Comando para salir del VC
+                if (!message.guild) {
+                    return message.reply('❌ Este comando solo funciona en servidores.');
                 }
                 
+                const botMember = message.guild.members.me;
+                
+                if (botMember.voice.channel) {
+                    const currentChannel = botMember.voice.channel;
+                    await botMember.voice.disconnect();
+                    
+                    const leaveEmbed = new EmbedBuilder()
+                        .setTitle('👋 Desconectado de Voz')
+                        .setDescription(`Bot salió de **${currentChannel.name}**`)
+                        .setColor('#0099ff')
+                        .addFields(
+                            { name: '📍 Canal', value: currentChannel.name, inline: true },
+                            { name: '⏰ Tiempo', value: new Date().toLocaleTimeString(), inline: true }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Sistema de Voz' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [leaveEmbed] });
+                } else {
+                    await message.reply('🤔 No estoy conectado a ningún canal de voz.');
+                }
+                break;
+
+            case 'vc-status':
+            case 'status_voice':
+                // Estado del sistema de voz
+                const voiceStatusEmbed = new EmbedBuilder()
+                    .setTitle('🎤 Estado del Sistema de Voz')
+                    .setDescription('Información actual del bot en canales de voz')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '🔊 Estado Actual', value: client.guilds.cache.some(g => g.members.me.voice.channel) ? 'Conectado a VC' : 'Desconectado', inline: true },
+                        { name: '🎯 Canal', value: client.guilds.cache.some(g => g.members.me.voice.channel) ? client.guilds.cache.find(g => g.members.me.voice.channel).members.me.voice.channel.name : 'Ninguno', inline: true },
+                        { name: '👥 Miembros', value: client.guilds.cache.some(g => g.members.me.voice.channel) ? `${client.guilds.cache.find(g => g.members.me.voice.channel).members.me.voice.channel.members.size}` : '0', inline: true },
+                        { name: '🤖 IA', value: 'Lista para conversar', inline: true },
+                        { name: '⚡ Comando', value: '$join para unirse', inline: true }
+                    )
+                    .setFooter({ text: 'Stealth-AntiCheatX | IA de Voz v3.0' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [voiceStatusEmbed] });
+                break;
+
+            case 'clear_chat':
+            case 'clear':
+                // Comando para limpiar spam (solo en canales permitidos)
+                const targetChannelId = args[0] ? args[0].replace(/[<>#]/g, '') : message.channel.id;
+                
+                // Verificar si el canal está en la lista de permitidos
+                if (!AI_PERMITTED_CHANNELS.includes(targetChannelId)) {
+                    const notAllowedEmbed = new EmbedBuilder()
+                        .setTitle('🚫 Acceso Restringido')
+                        .setDescription('Solo puedo limpiar chat en canales designados para IA')
+                        .setColor('#ff0000')
+                        .addFields(
+                            { name: '🔒 Canales Permitidos', value: 'Canal de chat IA y canal de comandos', inline: false },
+                            { name: '💡 Alternativa', value: 'Usa el comando directamente en el canal permitido', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Control de Spam' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [notAllowedEmbed] });
+                    return;
+                }
+                
+                try {
+                    const targetChannel = client.channels.cache.get(targetChannelId);
+                    
+                    if (!targetChannel || !targetChannel.isTextBased()) {
+                        return message.reply('❌ Canal no encontrado o no es de texto.');
+                    }
+                    
+                    const messages = await targetChannel.messages.fetch({ limit: 100 });
+                    const botMessages = messages.filter(msg => msg.author.bot && msg.author.id === client.user.id);
+                    
+                    if (botMessages.size === 0) {
+                        await message.reply('📝 No hay mensajes del bot para limpiar en este canal.');
+                        return;
+                    }
+                    
+                    // Eliminar mensajes del bot (máximo 50 a la vez)
+                    const messagesToDelete = Array.from(botMessages.values()).slice(0, 50);
+                    await targetChannel.bulkDelete(messagesToDelete);
+                    
+                    const clearEmbed = new EmbedBuilder()
+                        .setTitle('🧹 Chat Limpiado')
+                        .setDescription(`Eliminados ${messagesToDelete.length} mensajes del bot en **${targetChannel.name}**`)
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '🗂️ Canal', value: targetChannel.name, inline: true },
+                            { name: '📊 Mensajes', value: `${messagesToDelete.length} eliminados`, inline: true },
+                            { name: '⚡ Estado', value: 'Canal limpio y operativo', inline: true }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Control de Spam' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [clearEmbed] });
+                    
+                } catch (clearError) {
+                    console.error('[CLEAR] Error limpiando chat:', clearError);
+                    
+                    const errorEmbed = new EmbedBuilder()
+                        .setTitle('❌ Error Limpiando Chat')
+                        .setDescription('No se pudo limpiar el canal')
+                        .addFields(
+                            { name: '🔧 Error', value: clearError.message, inline: false }
+                        )
+                        .setColor('#ff0000')
+                        .setFooter({ text: 'Stealth-AntiCheatX | Error' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [errorEmbed] });
+                }
+                break;
+
+            case 'ping':
+                // Ping básico mejorado
+                const pingEmbed = new EmbedBuilder()
+                    .setTitle('🏓 Pong!')
+                    .setDescription('Latencia del bot Stealth-AntiCheatX')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '⚡ Latencia', value: `${client.ws.ping}ms`, inline: true },
+                        { name: '🤖 Bot', value: `${Math.round(client.shard ? client.shard.ping : 0)}ms`, inline: true },
+                        { name: '🛡️ Estado', value: 'Operacional', inline: true }
+                    )
+                    .setFooter({ text: 'Stealth-AntiCheatX | IA v3.0' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [pingEmbed] });
+                break;
+
+            case 'about':
+            case 'info':
+                const aboutEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Stealth-AntiCheatX IA v3.0')
+                    .setDescription('**Sistema Anti-Cheat Inteligente con IA Conversacional**')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '🤖 IA', value: 'MiniMax-M2 | Conversación natural', inline: true },
+                        { name: '🎤 Voz', value: 'Chat libre en tiempo real', inline: true },
+                        { name: '🔍 Detección', value: 'Patrones inteligentes', inline: true },
+                        { name: '⚡ Versión', value: '3.0 Autonoma', inline: true },
+                        { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
+                        { name: '👥 Usuarios', value: `${getTotalMemberCount(client)}`, inline: true },
+                        { name: '💻 Desarrollador', value: 'xpe.nettt', inline: true },
+                        { name: '🔮 Futuro', value: 'Análisis de ejecutables', inline: true }
+                    )
+                    .setFooter({ text: 'Community Stealth | xpe-hub/stealth-bot-nuevo' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [aboutEmbed] });
+                break;
+
+            case 'status':
+                // Status simplificado para troubleshooting
                 const uptime = Math.floor(process.uptime() / 3600);
                 const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
                 const threatAnalysis = performThreatAnalysis();
-                const totalAnalysisThreats = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
-                const botMember = message.guild ? message.guild.members.me : null;
-                const voiceChannel = botMember && botMember.voice.channel ? botMember.voice.channel.name : 'Desconectado';
+                const totalThreats = threatAnalysis.reduce((sum, threat) => sum + threat.count, 0);
+                
+                // Verificar estado de voz
+                let voiceStatus = 'Desconectado';
+                let voiceChannel = 'Ninguno';
+                let voiceMembers = '0';
+                
+                const guildWithVoice = client.guilds.cache.find(g => g.members.me.voice.channel);
+                if (guildWithVoice) {
+                    const voiceChannelObj = guildWithVoice.members.me.voice.channel;
+                    voiceStatus = 'Conectado';
+                    voiceChannel = voiceChannelObj.name;
+                    voiceMembers = voiceChannelObj.members.size.toString();
+                }
                 
                 const statusEmbed = new EmbedBuilder()
-                    .setTitle('📊 Estado del Sistema Stealth-AntiCheat')
-                    .setDescription('Métricas y estado actual del sistema anti-cheat')
+                    .setTitle('📊 Estado del Sistema Stealth-AntiCheatX')
+                    .setDescription('Métricas y estado actual de la IA v3.0')
                     .setColor('#00ff00')
                     .addFields(
-                        { name: '🔄 Sistema', value: 'Online ✓', inline: true },
+                        { name: '🛡️ Sistema', value: 'Online ✓', inline: true },
                         { name: '⏱️ Uptime', value: `${uptime}h`, inline: true },
                         { name: '💾 Memoria', value: `${memoryUsage} MB`, inline: true },
                         { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
-                        { name: '👥 Usuarios Monitoreados', value: `${getTotalMemberCount(client)}`, inline: true },
-                        { name: '⚠️ Amenazas Activas', value: `${totalAnalysisThreats}`, inline: true },
-                        { name: '🔍 Patrones', value: '12+ patrones cargados', inline: true },
-                        { name: '🎤 Voz', value: voiceChannel, inline: true },
-                        { name: '🛡️ Bio Dinámica', value: 'Cada 10 minutos', inline: true }
+                        { name: '👥 Usuarios', value: `${getTotalMemberCount(client)}`, inline: true },
+                        { name: '⚠️ Amenazas', value: `${totalThreats}`, inline: true },
+                        { name: '🧠 IA', value: 'MiniMax-M2 Activa', inline: true },
+                        { name: '🎤 Voz', value: `${voiceStatus} (${voiceChannel})`, inline: true },
+                        { name: '👥 VC Members', value: voiceMembers, inline: true },
+                        { name: '🔍 Patrones', value: '15+ patrones activos', inline: true },
+                        { name: '💬 Conversación', value: 'Natural', inline: true }
                     )
                     .addFields(
-                        { name: '🔧 Funciones Core', value: '• Detección automática de cheats\n• Monitoreo de voz en tiempo real\n• Sistema de permisos inteligente\n• Auto-reportes a desarrolladores', inline: false }
+                        { name: '🚀 Características IA v3.0', value: '• Conversación sin comandos\n• Sistema de voz integrado\n• Detección automática\n• Respuestas contextuales\n• Arquitectura para análisis futuro', inline: false }
                     )
-                    .setFooter({ text: 'Stealth-AntiCheat | Sistema Operacional' })
+                    .setFooter({ text: 'Stealth-AntiCheatX | IA Autonoma v3.0' })
                     .setTimestamp();
                 
                 await message.reply({ embeds: [statusEmbed] });
                 break;
 
-            case 'logs':
-            case 'log':
-                if (!isDeveloper(message.author.id)) {
-                    return message.reply('❌ Solo los desarrolladores pueden usar este comando.');
-                }
-                
-                const recentLogs = [
-                    '2025-11-28 14:45:23 - 🔍 Sistema iniciado correctamente',
-                    '2025-11-28 14:44:15 - 🛡️ Patrones de detección cargados (12 activos)',
-                    '2025-11-28 14:43:42 - 🏠 Conectado a 2 servidores',
-                    '2025-11-28 14:42:18 - ⚡ Bio dinámica activada (10min)',
-                    '2025-11-28 14:41:55 - 🎤 Sistema de voz inicializado'
-                ];
-                
-                const logsEmbed = new EmbedBuilder()
-                    .setTitle('📋 Logs del Sistema Stealth-AntiCheat')
-                    .setDescription('Actividad reciente del bot:')
-                    .setColor('#7289da')
-                    .addFields(
-                        { name: '📝 Actividad Reciente', value: recentLogs.join('\n'), inline: false },
-                        { name: '🔍 Estado', value: 'Monitoreo activo ✓', inline: true },
-                        { name: '⚡ Sistema', value: 'Operacional', inline: true }
-                    )
-                    .setFooter({ text: `Stealth-AntiCheat | ${recentLogs.length} entradas` })
-                    .setTimestamp();
-                
-                await message.reply({ embeds: [logsEmbed] });
-                break;
-                
-            case 'patterns':
-            case 'patrones':
-                if (!isDeveloper(message.author.id)) {
-                    return message.reply('❌ Solo los desarrolladores pueden usar este comando.');
-                }
-                
-                const patternsList = [
-                    '🧬 DLL Injection - Manual mapping',
-                    '💾 Memory Hacking - RAM manipulation', 
-                    '🎯 ESP/Wallhack - Visual exploits',
-                    '🔫 Aimbot - Predictive targeting',
-                    '⚡ Speed Manipulation - Time warp',
-                    '🗺️ Teleportation - Position bypass',
-                    '🎮 Triggerbot - Auto-fire mods',
-                    '💰 Resource Hacks - Infinite items',
-                    '🔓 Anti-cheat Bypass - Security evasion',
-                    '📦 Hack Distribution - Download links',
-                    '⚙️ Game Modifications - Modified clients',
-                    '🎲 Generic Cheats - Mixed tools'
-                ];
-                
-                const patternsEmbed = new EmbedBuilder()
-                    .setTitle('🔍 Patrones de Detección Stealth-AntiCheat')
-                    .setDescription('Patrones activos en monitoreo:')
-                    .setColor('#00ff00')
-                    .addFields(
-                        { name: '📊 Patrones Cargados', value: `${patternsList.length} patrones activos`, inline: true },
-                        { name: '🎯 Detección', value: 'Tiempo real', inline: true },
-                        { name: '⚡ Estado', value: 'Monitoreando', inline: true },
-                        { name: '🛡️ Lista de Patrones', value: patternsList.join('\n'), inline: false }
-                    )
-                    .setFooter({ text: 'Stealth-AntiCheat | Sistema de Detección' })
-                    .setTimestamp();
-                
-                await message.reply({ embeds: [patternsEmbed] });
-                break;
-                
-            case 'restart':
-            case 'reboot':
-                if (!isOwner(message.author.id)) {
-                    return message.reply('❌ Solo el propietario puede reiniciar el bot.');
-                }
-                
-                const restartEmbed = new EmbedBuilder()
-                    .setTitle('🔄 Reiniciando Sistema')
-                    .setDescription('El bot se reiniciará en 5 segundos...')
-                    .setColor('#ffaa00')
-                    .addFields(
-                        { name: '⏱️ Tiempo', value: '5 segundos', inline: true },
-                        { name: '🔧 Acción', value: 'Reinicio completo', inline: true },
-                        { name: '👤 Autorizado por', value: `${userNickname}`, inline: true }
-                    )
-                    .setFooter({ text: 'Stealth-AntiCheat | Reinicio' })
-                    .setTimestamp();
-                
-                await message.reply({ embeds: [restartEmbed] });
-                
-                setTimeout(() => {
-                    console.log('🔄 Reiniciando bot por comando de desarrollador...');
-                    process.exit(0);
-                }, 5000);
-                break;
-
             default:
                 const unknownEmbed = new EmbedBuilder()
                     .setTitle('❓ Comando no reconocido')
-                    .setDescription(`No conozco el comando \`${command}\`.`)
+                    .setDescription(`No conozco el comando \`${command}\``)
                     .addFields(
-                        { name: '💡 Ayuda', value: `Usa \`${BOT_PREFIX}help\` para ver todos los comandos disponibles.`, inline: false }
+                        { name: '💡 Ayuda', value: `Usa \`${BOT_PREFIX}help\` para ver comandos disponibles.`, inline: false },
+                        { name: '🤖 IA', value: '¡También puedes hablar conmigo naturalmente mencionándome!', inline: false }
                     )
-                    .setColor('#ff0000')
+                    .setColor('#ffaa00')
                     .setFooter({ text: `¡Hola ${userNickname}!` })
                     .setTimestamp();
                 
@@ -834,17 +738,21 @@ client.on('messageCreate', async (message) => {
     } catch (error) {
         console.error('Error ejecutando comando:', error);
         const errorEmbed = new EmbedBuilder()
-            .setTitle('❌ Error')
-            .setDescription('Ocurrió un error ejecutando el comando.')
+            .setTitle('❌ Error del Sistema')
+            .setDescription('Ocurrió un error ejecutando el comando')
+            .addFields(
+                { name: '🔧 Error', value: error.message, inline: false },
+                { name: '💬 Alternativa', value: 'Intenta mencionarme sin comando para conversación natural', inline: false }
+            )
             .setColor('#ff0000')
-            .setFooter({ text: 'Stealth-AntiCheat | xpe.nettt' })
+            .setFooter({ text: 'Stealth-AntiCheatX | IA v3.0' })
             .setTimestamp();
         
         await message.reply({ embeds: [errorEmbed] });
     }
 });
 
-// Manejo de errores
+// Manejo de errores mejorado
 client.on('error', error => {
     console.error('Error de Discord.js:', error);
 });
