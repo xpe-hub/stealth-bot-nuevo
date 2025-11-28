@@ -4,7 +4,7 @@
 
 const status = {
     timestamp: new Date().toISOString(),
-    version: "v3.0 - IA AUTÓNOMA FINAL",
+    version: "v3.0 - IA AUTÓNOMA FINAL - REACTIVADO",
     
     dependencias: {
         axios: "✅ v1.6.0",
