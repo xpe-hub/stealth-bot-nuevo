@@ -1507,3 +1507,10 @@ client.login(process.env.DISCORD_BOT_TOKEN).catch(error => {
     console.error('Error al conectar el bot:', error);
     process.exit(1);
 });
+
+// DUPLICATE CATCH BLOCK - ESTE ES EL ERROR ORIGINAL QUE CAUSABA EL CRASH
+} catch (error) {
+    console.error('Error duplicado:', error);
+    // Este catch block no tiene try correspondiente
+    // por eso causaba el SyntaxError: Unexpected token 'catch'
+}
