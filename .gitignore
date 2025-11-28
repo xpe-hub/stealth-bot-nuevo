@@ -648,12 +648,12 @@
 **/.AppleDouble
 **/.LSOverride
 **/Icon
-**/DocumentRevisions-V100
+**/.DocumentRevisions-V100
 **/.fseventsd
 **/.Spotlight-V100
-**/TemporaryItems
-**/Trashes
-**/VolumeIcon.icns
+**/.TemporaryItems
+**/.Trashes
+**/.VolumeIcon.icns
 **/.com.apple.timemachine.donotpresent
 **/.AppleDB
 **/.AppleDesktop
@@ -704,7 +704,7 @@
 **/.apt_generated/
 **/.apt_generated_test/
 **/.cache-main
-**/.scala_dependencies/
+**/.scala_dependencies
 **/.worksheet
 
 # NetBeans
@@ -895,4 +895,3 @@
 # uploads/
 # downloads/
 
-# RAILWAY CACHE CLEAR - TIMESTAMP: 2025-11-28 10:32:21
