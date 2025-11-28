@@ -4,7 +4,7 @@
   "description": "Bot avanzado de Discord con capacidades anti-cheat",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot_test.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
