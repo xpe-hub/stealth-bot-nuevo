@@ -1,7 +1,7 @@
 // ========================================================
 // STEALTH-ANTICHEATX - BOT MEJORADO 2025-11-28
 // Bio cada 10min + VC robusto + Reconocimiento canales
-// Sin MiniMax + Comandos avanzados + Estilo Stealth
+// CON IA MINIMAX REAL + Comandos avanzados + Estilo Stealth
 // ========================================================
 
 require('dotenv').config();
@@ -172,16 +172,26 @@ client.once('ready', () => {
     console.log(`📍 Conectado como: ${client.user.tag}`);
     console.log(`🏠 En ${client.guilds.cache.size} servidores`);
     
-    // Establecer presencia dinámica del bot (BIO VIVA)
+    // Establecer presencia dinámica del bot (BIO VIVA) con IA MiniMax
     const activities = [
-        '🔍 Escaneando amenazas...',
-        '🛡️ Protegiendo Community Stealth',
-        '⚡ Analizando servidores',
-        '🚨 Monitoreo anti-cheat activo',
-        '👀 Vigilando exploits',
-        '🔧 Manteniendo seguridad',
-        '🎯 Detectando trampas',
-        '🌟 Community Stealth'
+        '🛡️ Stealth-AntiCheat con IA MiniMax',
+        '⚡ Monitoreando 12 patrones activos',
+        '🔍 Analizando repositorio xpe-hub/stealth-bot-nuevo', 
+        '🚫 Detectando DLL Injection',
+        '💻 MiniMax-M2 conectado',
+        '🎮 Protegiendo gameplay justo',
+        '🤖 IA contextualizando conversaciones',
+        '🎯 Patrones anti-cheat en tiempo real',
+        '🔒 Sistema de seguridad avanzado',
+        '📊 Sistema Stealth operacional',
+        '🚨 Monitoreo 24/7 activo',
+        '👀 Vigilando exploits de memoria',
+        '🔧 Manteniendo protección constante',
+        '🎯 Aimbot detection activa',
+        '🌟 Community Stealth protegida',
+        '⚙️ Procesando con MiniMax API',
+        '💡 Resolviendo vulnerabilidades',
+        '🛠️ Análisis predictivo habilitado'
     ];
     
     let activityIndex = 0;
@@ -318,22 +328,68 @@ client.on('messageCreate', async (message) => {
     // Obtener el apodo del usuario
     const userNickname = getUserNickname(message.author.id, message.author.username);
     
-    // Manejo de menciones
+    // Manejo de menciones con IA MiniMax Real
     if (message.content.includes(`<@${client.user.id}>`) || message.content.includes(`<@!${client.user.id}>`)) {
         const totalMembers = getTotalMemberCount(client);
         
         const isCmdChannel = message.channel.id === CMD_CHANNEL_ID;
         
+        // Si es solo mención sin comando, usar IA MiniMax
+        const cleanContent = message.content.replace(/<@!?\d+>/g, '').trim();
+        
+        if (cleanContent.length > 0 && !cleanContent.startsWith(BOT_PREFIX)) {
+            // Consultar IA MiniMax para respuesta inteligente
+            try {
+                console.log('🤖 Procesando mención con IA MiniMax...');
+                
+                const channelType = isCmdChannel ? 'cmd' : 'chat';
+                const aiResponse = await stealthCheatXChat(message, channelType);
+                
+                const responseData = await processStealthCheatXResponse(aiResponse, message, {
+                    title: `🛡️ Stealth-AntiCheatX | ${channelType.toUpperCase()}`,
+                    color: isCmdChannel ? '#ff6b35' : '#0099ff'
+                });
+                
+                await message.reply(responseData);
+                return;
+                
+            } catch (error) {
+                console.error('❌ Error en IA MiniMax:', error);
+                
+                // Fallback a respuesta básica
+                const fallbackEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Stealth-AntiCheatX')
+                    .setDescription('🧠 **IA MiniMax** temporalmente no disponible. Sistema de respaldo activado.')
+                    .setColor('#ffaa00')
+                    .addFields(
+                        { name: '⚡ Estado', value: 'Sistema operacional', inline: true },
+                        { name: '🔧 Resolución', value: 'Reintentando conexión...', inline: true }
+                    )
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [fallbackEmbed] });
+                return;
+            }
+        }
+        
+        // Respuesta de bienvenida inteligente
+        const isChatChannel = message.channel.id === CHAT_CHANNEL_ID || 
+                            message.channel.name.includes('chat') ||
+                            message.channel.name.includes('ai');
+        
         const embed = new EmbedBuilder()
-            .setTitle('🛡️ Stealth-AntiCheatX Monitoreando')
-            .setDescription(`¡Hola ${userNickname}! Soy **Stealth-AntiCheatX** - Sistema anti-cheat activo`)
-            .setColor('#0099ff')
+            .setTitle('🛡️ Stealth-AntiCheatX | IA MiniMax Conectada')
+            .setDescription(`¡Hola ${userNickname}! Soy **Stealth-AntiCheatX** - Sistema anti-cheat con IA avanzada`)
+            .setColor(isCmdChannel ? '#ff6b35' : '#0099ff')
             .addFields(
-                { name: '📋 Comandos Disponibles', value: `\`${BOT_PREFIX}help\` - Lista completa\n\`${BOT_PREFIX}ping\` - Verificar estado\n\`${BOT_PREFIX}status\` - Estado del sistema`, inline: true },
-                { name: '🔍 Detección Activa', value: '12+ patrones cargados', inline: true },
-                { name: '⚠️ Advertencia', value: isCmdChannel ? '⚡ **CMD:** Solo comandos aquí' : '💬 **CHAT:** Conversación libre', inline: true }
+                { name: '🧠 IA', value: 'MiniMax-M2 | Memoria contextual', inline: true },
+                { name: '🔍 Detección', value: '12+ patrones activos', inline: true },
+                { name: '⚡ Comandos', value: `\`${BOT_PREFIX}ai [mensaje]\` - IA inteligente\n\`${BOT_PREFIX}help\` - Lista completa\n\`${BOT_PREFIX}status\` - Estado sistema`, inline: true },
+                { name: '💬 Canal', value: isCmdChannel ? '⚡ **CMD:** Solo comandos aquí' : (isChatChannel ? '💬 **CHAT-AI:** Conversación libre con IA' : '📢 Canal de comunicación'), inline: true },
+                { name: '🏠 Servidores', value: `${client.guilds.cache.size}`, inline: true },
+                { name: '👥 Monitoreando', value: `${totalMembers} usuarios`, inline: true }
             )
-            .setFooter({ text: `Stealth-AntiCheat | ${isCmdChannel ? 'Canal CMD' : 'Canal Chat'} | ${client.guilds.cache.size} servidores` })
+            .setFooter({ text: `Stealth-AntiCheat | ${isCmdChannel ? 'CMD' : isChatChannel ? 'Chat-AI' : 'General'} | xpe-hub/stealth-bot-nuevo` })
             .setTimestamp();
         
         await message.reply({ embeds: [embed] });
@@ -373,6 +429,70 @@ client.on('messageCreate', async (message) => {
                     .setTimestamp();
                 
                 await message.reply({ embeds: [helpEmbed] });
+                break;
+
+            case 'ai':
+            case 'ask':
+            case 'stealth':
+                // Comando de IA MiniMax
+                const aiMessage = args.join(' ').trim();
+                
+                if (!aiMessage) {
+                    const helpAIEmbed = new EmbedBuilder()
+                        .setTitle('🧠 Comando IA MiniMax')
+                        .setDescription('Uso correcto del comando de IA avanzada')
+                        .setColor('#6a5acd')
+                        .addFields(
+                            { name: '💬 Ejemplo', value: `\`${BOT_PREFIX}ai ¿Cómo funciona el sistema anti-cheat?\``, inline: false },
+                            { name: '🔍 Consultas Válidas', value: '• Preguntas sobre anti-cheat\n• Análisis de patrones\n• Información técnica\n• Conversación general', inline: false },
+                            { name: '⚡ Características', value: '• Memoria contextual\n• IA MiniMax-M2\n• Conocimiento repositorio', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheat | IA Avanzada' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [helpAIEmbed] });
+                    break;
+                }
+                
+                try {
+                    console.log(`🤖 IA MiniMax: Procesando consulta de ${message.author.username}`);
+                    
+                    // Determinar tipo de canal para contexto
+                    const isCmdChannel = message.channel.id === CMD_CHANNEL_ID;
+                    const channelType = isCmdChannel ? 'cmd' : 'chat';
+                    
+                    // Procesar con IA MiniMax
+                    const aiResponse = await stealthCheatXChat(message, channelType);
+                    
+                    // Crear respuesta embebida
+                    const aiEmbed = new EmbedBuilder()
+                        .setColor('#6a5acd')
+                        .setTitle(`🧠 IA MiniMax | ${channelType.toUpperCase()}`)
+                        .setDescription(aiResponse)
+                        .addFields(
+                            { name: '👤 Usuario', value: message.author.username, inline: true },
+                            { name: '📝 Consulta', value: aiMessage.length > 50 ? aiMessage.substring(0, 50) + '...' : aiMessage, inline: true },
+                            { name: '⚡ Estado', value: 'MiniMax-M2 Activo', inline: true }
+                        )
+                        .setTimestamp()
+                        .setFooter({ text: 'Stealth-AntiCheat | IA Contextual' });
+                    
+                    await message.reply({ embeds: [aiEmbed] });
+                    
+                } catch (error) {
+                    console.error('❌ Error en comando IA:', error);
+                    
+                    const errorAIEmbed = new EmbedBuilder()
+                        .setColor('#ff0000')
+                        .setTitle('🛡️ Error del Sistema IA')
+                        .setDescription(`Error procesando consulta: ${error.message}`)
+                        .addFields(
+                            { name: '🔧 Solución', value: 'Reintentando conexión con MiniMax...', inline: false }
+                        )
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [errorAIEmbed] });
+                }
                 break;
 
             case 'vc':
