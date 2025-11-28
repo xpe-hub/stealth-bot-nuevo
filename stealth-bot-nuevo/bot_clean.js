@@ -323,10 +323,10 @@ client.on('messageCreate', async (message) => {
     try {
         switch (command) {
             case 'ping':
-                const pingAIResponse = await getAIResponse("Responde de manera amigable con información sobre tu estado como IA anti-cheat.", `Usuario: ${message.author.tag}, Canal: ${message.channel.name}`);
+                const aiResponse = await getAIResponse("Responde de manera amigable con información sobre tu estado como IA anti-cheat.", `Usuario: ${message.author.tag}, Canal: ${message.channel.name}`);
                 const pingEmbed = new EmbedBuilder()
                     .setTitle('🏓 Pong!')
-                    .setDescription(pingAIResponse)
+                    .setDescription(aiResponse)
                     .addFields(
                         { name: '💓 Latencia Bot', value: `${client.ws.ping}ms`, inline: true },
                         { name: '🧠 IA MiniMax', value: 'Activa', inline: true },
