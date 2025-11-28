@@ -1,0 +1,12 @@
+
+=== LOG DE CONFIGURACIÓN SYSTEMPROMPT.IO ===
+
+2025-11-26 16:25:38 - INICIANDO SETUP
+Usuario: iPhone (sin PC)
+Opción elegida: Systemprompt.io (más fácil móvil)
+Estado: Systemprompt.io ya instalado
+Siguiente paso: Configurar servidor MCP con MiniMax API
+Tiempo estimado: 5 minutos
+Comandos por voz: ✅ Configurados
+URL principal: https://mcp-api.minimax.chat/v1
+URL alternativa: https://mcp-api.minimax.chat/api/v1
