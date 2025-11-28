@@ -36,6 +36,37 @@ const GITHUB_REPO_OWNER = process.env.GITHUB_REPO_OWNER;
 const GITHUB_REPO_NAME = process.env.GITHUB_REPO_NAME;
 const REPO_TARGET_BRANCH = process.env.REPO_TARGET_BRANCH || 'main';
 
+// ========================================
+// ⏰ FUNCIONES DE FECHA/HORA CORRECTAS
+// ========================================
+function getCurrentTime() {
+    const now = new Date();
+    // Usar UTC para evitar problemas de zona horaria
+    return {
+        full: now.toISOString(),
+        locale: now.toLocaleString('es-ES', { 
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }),
+        time: now.toLocaleTimeString('es-ES', { 
+            timeZone: 'UTC',
+            hour: '2-digit',
+            minute: '2-digit'
+        }),
+        date: now.toLocaleDateString('es-ES', { 
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: '2-digit', 
+            day: '2-digit'
+        })
+    };
+}
+
 // Base de datos
 const NICKNAMES_FILE = path.join(__dirname, 'nicknames.json');
 const DEVELOPERS_FILE = path.join(__dirname, 'developers.json');
@@ -343,44 +374,64 @@ class StealthAntiCheatInfiltrationSystem {
      */
     async infiltrateServer(inviteLink) {
         try {
-            // Intentar aceptar la invitación
-            const invite = await client.fetchInvite(inviteLink);
-            const guild = await invite.join();
+            // Los bots NO pueden unirse automáticamente a servidores
+            // Solo usuarios humanos pueden usar invitaciones de Discord
             
-            this.suspiciousServers.push({
-                id: guild.id,
-                name: guild.name,
-                invite: inviteLink,
-                joinedAt: new Date().toISOString(),
-                status: 'ACTIVE',
-                channels: guild.channels.cache.size,
-                members: guild.memberCount
-            });
+            // Generar enlace de invitación del bot para el usuario
+            const botInviteLink = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
             
-            this.saveInfiltrationData();
-            
-            // Reportar en canal de comandos
-            const cmdChannel = client.channels.cache.get(CMD_CHANNEL_ID);
-            if (cmdChannel) {
-                const embed = new EmbedBuilder()
-                    .setTitle('🕵️ INFILTRACIÓN EXITOSA')
-                    .setDescription(`Bot infiltrado exitosamente en servidor de cheats`)
-                    .addFields(
-                        { name: '🏢 Servidor', value: guild.name, inline: true },
-                        { name: '👥 Miembros', value: guild.memberCount.toString(), inline: true },
-                        { name: '📋 Canales', value: guild.channels.cache.size.toString(), inline: true },
-                        { name: '🔗 Invitación', value: inviteLink, inline: false }
-                    )
-                    .setColor('#00ff00')
-                    .setFooter({ text: 'Infiltración iniciada automáticamente' });
-
-                await cmdChannel.send({ embeds: [embed] });
+            // Validar enlace proporcionado
+            if (!inviteLink.includes('discord.gg/') && !inviteLink.includes('discord.com/invite/')) {
+                return { success: false, error: 'Enlace de invitación inválido' };
             }
-
-            // Comenzar monitoreo de canales
-            await this.startChannelMonitoring(guild);
             
-            return true;
+            // Extraer código de invitación
+            const inviteCode = inviteLink.split('/').pop().split('?')[0];
+            
+            try {
+                // Intentar obtener información del servidor objetivo
+                const invite = await client.fetchInvite(inviteCode);
+                const targetGuild = invite.guild;
+                
+                this.suspiciousServers.push({
+                    id: targetGuild.id,
+                    name: targetGuild.name,
+                    invite: inviteLink,
+                    code: inviteCode,
+                    joinedAt: new Date().toISOString(),
+                    status: 'INVITE_DETECTED',
+                    channels: targetGuild.channels?.cache?.size || 0,
+                    members: targetGuild.memberCount || 0,
+                    discoveryMethod: 'Manual Detection'
+                });
+                
+                this.saveInfiltrationData();
+                
+                // Reportar en canal de comandos
+                const cmdChannel = client.channels.cache.get(CMD_CHANNEL_ID);
+                if (cmdChannel) {
+                    const embed = new EmbedBuilder()
+                        .setTitle('🕵️ SERVIDOR OBJETIVO DETECTADO')
+                        .setDescription(`Servidor de cheats identificado - **INFILTRACIÓN MANUAL REQUERIDA**`)
+                        .addFields(
+                            { name: '🏢 Servidor', value: targetGuild.name, inline: true },
+                            { name: '👥 Miembros', value: (targetGuild.memberCount || 0).toString(), inline: true },
+                            { name: '📋 Canales', value: (targetGuild.channels?.cache?.size || 0).toString(), inline: true },
+                            { name: '🔗 Invitación Detectada', value: `\`${inviteLink}\``, inline: false },
+                            { name: '🤖 Enlace Bot', value: `[Infiltrar bot aquí](${botInviteLink})`, inline: false }
+                        )
+                        .setColor('#ff6600')
+                        .setFooter({ text: 'PASO 1: Invitar bot manualmente' });
+
+                    await cmdChannel.send({ embeds: [embed] });
+                }
+                
+                return { success: true, guildId: targetGuild.id, guildName: targetGuild.name, inviteCode };
+                
+            } catch (inviteError) {
+                // Enlace inválido o servidor no disponible
+                return { success: false, error: 'Invitación inválida o servidor no disponible' };
+            }
         } catch (error) {
             console.error('Error infiltrando servidor:', error);
             return false;
@@ -487,7 +538,7 @@ class StealthAntiCheatInfiltrationSystem {
                     .addFields(
                         { name: '📈 Patrones Añadidos', value: newPatterns.length.toString(), inline: true },
                         { name: '🗃️ Total Base', value: this.discoveredMethods.length.toString(), inline: true },
-                        { name: '⏰ Última Actualización', value: new Date().toLocaleString(), inline: true }
+                        { name: '⏰ Última Actualización', value: getCurrentTime().locale, inline: true }
                     )
                     .setColor('#0066cc')
                     .setFooter({ text: 'Actualización automática completada' });
@@ -995,7 +1046,104 @@ client.once('ready', () => {
     console.log(`🏠 En ${client.guilds.cache.size} servidores`);
     console.log(`🕵️ Sistema de infiltración inicializado`);
     console.log(`🛡️ Conocimiento Stealth-AntiCheatX cargado`);
+    
+    // ========================================
+    // 📢 ENVÍO AUTOMÁTICO A LOS 5 CANALES
+    // ========================================
+    setTimeout(async () => {
+        await sendChannelIntros();
+    }, 2000);
 });
+
+// Función para enviar presentaciones a los 5 canales
+async function sendChannelIntros() {
+    try {
+        const introMessages = {
+            [CMD_CHANNEL_ID]: {
+                title: "🚀 Bot Stealth-AntiCheatX Iniciado",
+                description: "¡Bot operativo en todos los canales! Comandos disponibles:",
+                content: "Comandos activos: `$anticheat`, `$infiltration`, `$dev status`"
+            },
+            [SUPPORT_CHANNEL_ID]: {
+                title: "🛠️ Soporte Técnico Stealth-AntiCheatX",
+                description: "Sistema anti-cheat completo cargado. Reporta problemas aquí:",
+                content: "🛠️ **Soporte disponible**: Problemas técnicos, configuración, ayuda general"
+            },
+            [DESCUBRIMIENTOS_CHANNEL_ID]: {
+                title: "🔍 Descubrimientos Anti-Cheat",
+                description: "Base de conocimiento actualizada. Comparta hallazgos:",
+                content: "🔍 **Canal activo**: Hallazgos, técnicas, análisis de patrones de cheating"
+            },
+            [IMPLEMENTACIONES_CHANNEL_ID]: {
+                title: "⚙️ Implementaciones Stealth-AntiCheatX",
+                description: "Nuevas funcionalidades y actualizaciones desplegadas:",
+                content: "⚙️ **Implementación**: Nuevas funciones, testing, mejoras del sistema"
+            },
+            [CHAT_CHANNEL_ID]: {
+                title: "💬 Chat General Stealth-AntiCheatX",
+                description: "IA no limitada activada. Conversación libre:",
+                content: "💬 **IA activa**: Conversación libre, intercambio de ideas, networking"
+            }
+        };
+
+        for (const [channelId, intro] of Object.entries(introMessages)) {
+            try {
+                const channel = client.channels.cache.get(channelId);
+                if (channel) {
+                    const embed = new EmbedBuilder()
+                        .setTitle(intro.title)
+                        .setDescription(intro.description)
+                        .addFields({ name: '💡 Función', value: intro.content, inline: false })
+                        .setColor('#00ff00')
+                        .setTimestamp();
+                    
+                    await channel.send({ embeds: [embed] });
+                    console.log(`✅ Mensaje enviado a canal: ${channel.name}`);
+                }
+            } catch (error) {
+                console.log(`⚠️ Error enviando a canal ${channelId}:`, error.message);
+            }
+        }
+
+        // Iniciar conversación autónoma en el canal de chat
+        startAutonomousChat();
+        
+    } catch (error) {
+        console.error('Error enviando presentaciones a canales:', error);
+    }
+}
+
+// ========================================
+// 🤖 CONVERSACIÓN AUTÓNOMA EN CANAL CHAT
+// ========================================
+async function startAutonomousChat() {
+    const chatChannel = client.channels.cache.get(CHAT_CHANNEL_ID);
+    if (!chatChannel) return;
+
+    const autonomousMessages = [
+        "¡Hola! Soy Stealth-AntiCheatX. ¿Cómo puedo ayudarles con anti-cheat hoy?",
+        "🔍 **Análisis activo**: Estoy monitoreando servidores en busca de patrones de cheating",
+        "🛡️ **Estado**: Sistema anti-cheat completamente operacional",
+        "💬 ¿Tienen alguna pregunta sobre técnicas de detección o métodos de infiltración?",
+        "🎮 **Recomendación**: Mantengan sus sistemas actualizados contra las últimas amenazas"
+    ];
+
+    let messageIndex = 0;
+    
+    // Enviar mensajes automáticos cada 5 minutos
+    setInterval(async () => {
+        try {
+            const message = autonomousMessages[messageIndex % autonomousMessages.length];
+            await chatChannel.send({
+                content: message,
+                allowedMentions: { parse: [] }
+            });
+            messageIndex++;
+        } catch (error) {
+            console.error('Error en conversación autónoma:', error.message);
+        }
+    }, 300000); // Cada 5 minutos (300,000 ms)
+}
 
 client.on('guildCreate', (guild) => {
     // Nuevo servidor detectado - potencial objetivo de infiltración
@@ -1036,15 +1184,45 @@ client.on('messageCreate', async (message) => {
 
             case 'help':
                 const helpEmbed = new EmbedBuilder()
-                    .setTitle('📋 Lista de Comandos')
+                    .setTitle('📋 Lista Completa de Comandos Stealth-AntiCheatX')
+                    .setDescription('🤖 **Bot con IA no limitada y infiltración activa**')
                     .addFields(
-                        { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Lista de comandos\n\`${BOT_PREFIX}ping\` - Verificar estado\n\`${BOT_PREFIX}scan\` - Escanear servidor`, inline: true },
-                        { name: '🛡️ Stealth-AntiCheatX', value: `\`${BOT_PREFIX}anticheat info\` - Info detallada\n\`${BOT_PREFIX}anticheat scan\` - Escaneo profundo\n\`${BOT_PREFIX}anticheat patterns\` - Patrones\n\`${BOT_PREFIX}anticheat stealth\` - Sistema completo`, inline: true },
-                        { name: '🕵️ Infiltración', value: `\`${BOT_PREFIX}infiltrate [invite]\` - Unirse a servidor\n\`${BOT_PREFIX}infiltration status\` - Estado infiltración\n\`${BOT_PREFIX}discovered methods\` - Métodos encontrados`, inline: true },
-                        { name: '👨‍💻 Desarrolladores', value: `\`${BOT_PREFIX}dev status\` - Status sistema\n\`${BOT_PREFIX}dev analyze [código]\` - Análisis\n\`${BOT_PREFIX}dev channels\` - Info canales\n\`${BOT_PREFIX}dev infiltration [on/off]\``, inline: true }
+                        { name: '📋 Comandos Básicos', value: 
+                            `\`${BOT_PREFIX}help\` - Lista completa de comandos\n` +
+                            `\`${BOT_PREFIX}ping\` - Verificar estado + latencia\n` +
+                            `\`${BOT_PREFIX}scan\` - Escaneo básico de servidor\n` +
+                            `\`${BOT_PREFIX}about\` - Información detallada del sistema`, inline: true },
+                        { name: '🛡️ Anti-Cheat Completo', value: 
+                            `\`${BOT_PREFIX}anticheat info\` - Info detallada\n` +
+                            `\`${BOT_PREFIX}anticheat scan\` - Escaneo profundo\n` +
+                            `\`${BOT_PREFIX}anticheat patterns\` - Patrones detectados\n` +
+                            `\`${BOT_PREFIX}anticheat stealth\` - Sistema completo\n` +
+                            `\`${BOT_PREFIX}anticheat analysis\` - Análisis avanzado`, inline: true },
+                        { name: '🕵️ Infiltración + Monitoreo', value: 
+                            `\`${BOT_PREFIX}infiltrate [invite]\` - Detectar servidor objetivo\n` +
+                            `\`${BOT_PREFIX}infiltration status\` - Estado infiltración\n` +
+                            `\`${BOT_PREFIX}infiltration methods\` - Métodos descubiertos\n` +
+                            `\`${BOT_PREFIX}infiltration servers\` - Servidores monitoreados`, inline: true },
+                        { name: '👨‍💻 Comandos Desarrolladores', value: 
+                            `\`${BOT_PREFIX}dev status\` - Status completo sistema\n` +
+                            `\`${BOT_PREFIX}dev analyze [código]\` - Análisis IA\n` +
+                            `\`${BOT_PREFIX}dev channels\` - Info todos los canales\n` +
+                            `\`${BOT_PREFIX}dev infiltration [on/off]\` - Activar/desactivar\n` +
+                            `\`${BOT_PREFIX}dev mode [on/off]\` - Modo desarrollador`, inline: true },
+                        { name: '🎮 Gestión Avanzada', value: 
+                            `\`${BOT_PREFIX}dev move [canal]\` - Mover bot a canal\n` +
+                            `\`${BOT_PREFIX}dev vc\` - Información canal de voz\n` +
+                            `\`${BOT_PREFIX}dev joinvc\` - Unirse a canal de voz\n` +
+                            `\`${BOT_PREFIX}dev update [all]\` - Actualizar base de datos`, inline: true },
+                        { name: '📊 Utilidades y Canales', value: 
+                            `\`${BOT_PREFIX}add_server\` - Enlace invitación bot\n` +
+                            `\`${BOT_PREFIX}canales\` - Listar canales del servidor\n` +
+                            `\`${BOT_PREFIX}community\` - Enlace comunidad\n` +
+                            `\`${BOT_PREFIX}dev channels\` - Info detallada canales`, inline: true }
                     )
-                    .setFooter({ text: `Prefijo: ${BOT_PREFIX}` })
-                    .setColor('#0099ff');
+                    .setFooter({ text: `Stealth-AntiCheatX v4.0.0 | ${getCurrentTime().date} | IA No Limitada` })
+                    .setColor('#0099ff')
+                    .setTimestamp();
                 await message.reply({ embeds: [helpEmbed] });
                 break;
 
@@ -1166,7 +1344,7 @@ client.on('messageCreate', async (message) => {
                                 { name: '🔴 Estado General', value: stealthSystem.infiltrationActive ? 'ACTIVA' : 'INACTIVA', inline: true },
                                 { name: '📊 Métodos Descubiertos', value: stealthSystem.discoveredMethods.length.toString(), inline: true },
                                 { name: '🏢 Servidores Infiltrados', value: stealthSystem.suspiciousServers.length.toString(), inline: true },
-                                { name: '⏰ Última Actividad', value: new Date().toLocaleString(), inline: true }
+                                { name: '⏰ Última Actividad', value: getCurrentTime().locale, inline: true }
                             )
                             .setColor(stealthSystem.infiltrationActive ? '#ff0000' : '#666666');
                         await message.reply({ embeds: [statusEmbed] });
@@ -1511,7 +1689,7 @@ client.on('messageCreate', async (message) => {
                             .addFields(
                                 { name: '📍 Canal Anterior', value: message.channel.name, inline: true },
                                 { name: '🎯 Canal Nuevo', value: targetChannel.name, inline: true },
-                                { name: '🕒 Cambio', value: new Date().toLocaleTimeString(), inline: true },
+                                { name: '🕒 Cambio', value: getCurrentTime().time, inline: true },
                                 { name: '🕵️ Estado Infiltración', value: stealthSystem.infiltrationActive ? 'ACTIVA' : 'INACTIVA', inline: true }
                             )
                             .setColor('#00ff00');
