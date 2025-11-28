@@ -1,0 +1,106 @@
+const https = require('https');
+const fs = require('fs');
+
+// Configuración de GitHub
+const GITHUB_TOKEN = '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';
+const OWNER = 'xpe-hub';
+const REPO = 'stealth-bot-nuevo';
+const FILE_PATH = 'bot.js';
+const BRANCH = 'main';
+
+// Leer el archivo CORRECTO (1982 líneas)
+const fileContent = fs.readFileSync('/workspace/stealth-bot-nuevo/bot.js', 'utf8');
+
+// Función para hacer request a GitHub API
+function githubRequest(url, method, data) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: method,
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Stealth-AntiCheat-Bot'
+            }
+        };
+        
+        const req = https.request(options, (res) => {
+            let body = '';
+            res.on('data', (chunk) => body += chunk);
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    resolve(JSON.parse(body));
+                } else {
+                    reject(new Error(`GitHub API error: ${res.statusCode} ${res.statusText} - ${body}`));
+                }
+            });
+        });
+        
+        req.on('error', reject);
+        
+        if (data) {
+            req.write(JSON.stringify(data));
+        }
+        
+        req.end();
+    });
+}
+
+async function uploadFile() {
+    try {
+        console.log('🚀 Subiendo el archivo CORRECTO (1982 líneas)...');
+        console.log('📊 Líneas del archivo:', fileContent.split('\n').length);
+        
+        // 1. Obtener el SHA del archivo actual
+        const getUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
+        console.log('📋 Obteniendo archivo actual...');
+        
+        const currentFile = await githubRequest(getUrl, 'GET');
+        console.log('✅ Archivo actual encontrado:', currentFile.sha);
+        
+        // 2. Preparar datos para subir
+        const encodedContent = Buffer.from(fileContent, 'utf8').toString('base64');
+        const commitMessage = 'Fix: Replace bot.js with CORRECT VERSION (1982 lines)';
+        
+        const uploadData = {
+            message: commitMessage,
+            content: encodedContent,
+            sha: currentFile.sha,
+            branch: BRANCH
+        };
+        
+        // 3. Subir archivo
+        const uploadUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
+        console.log('📤 Subiendo archivo CORRECTO a GitHub...');
+        
+        const result = await githubRequest(uploadUrl, 'PUT', uploadData);
+        
+        console.log('🎉 ¡Archivo CORRECTO subido exitosamente!');
+        console.log('📊 Commit SHA:', result.commit.sha);
+        console.log('🔗 Commit URL:', result.commit.html_url);
+        
+        return {
+            success: true,
+            commitSha: result.commit.sha,
+            commitUrl: result.commit.html_url
+        };
+        
+    } catch (error) {
+        console.error('❌ Error subiendo archivo:', error.message);
+        throw error;
+    }
+}
+
+// Ejecutar la subida
+uploadFile().then(result => {
+    console.log('\n✅ ¡SUCESO! El archivo CORRECTO ha sido subido');
+    console.log('🔗 Ver commit:', result.commitUrl);
+    console.log('🎯 Este archivo NO tiene el catch duplicado y debería funcionar!');
+}).catch(error => {
+    console.error('\n❌ FALLO:', error.message);
+    process.exit(1);
+});
