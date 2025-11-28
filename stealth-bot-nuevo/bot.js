@@ -1041,7 +1041,7 @@ client.on('messageCreate', async (message) => {
                         { name: '📋 Comandos Básicos', value: `\`${BOT_PREFIX}help\` - Lista de comandos\n\`${BOT_PREFIX}ping\` - Verificar estado\n\`${BOT_PREFIX}scan\` - Escanear servidor`, inline: true },
                         { name: '🛡️ Stealth-AntiCheatX', value: `\`${BOT_PREFIX}anticheat info\` - Info detallada\n\`${BOT_PREFIX}anticheat scan\` - Escaneo profundo\n\`${BOT_PREFIX}anticheat patterns\` - Patrones\n\`${BOT_PREFIX}anticheat stealth\` - Sistema completo`, inline: true },
                         { name: '🕵️ Infiltración', value: `\`${BOT_PREFIX}infiltrate [invite]\` - Unirse a servidor\n\`${BOT_PREFIX}infiltration status\` - Estado infiltración\n\`${BOT_PREFIX}discovered methods\` - Métodos encontrados`, inline: true },
-                        { name: '👨‍💻 Desarrolladores', value: `\`${BOT_PREFIX}dev status\` - Status sistema\n\`${BOT_PREFIX}dev analyze [código]\` - Análisis\n\`${BOT_PREFIX}dev channels\` - Info canales\n\`${BOT_PREFIX}dev infiltration [on/off]``, inline: true }
+                        { name: '👨‍💻 Desarrolladores', value: `\`${BOT_PREFIX}dev status\` - Status sistema\n\`${BOT_PREFIX}dev analyze [código]\` - Análisis\n\`${BOT_PREFIX}dev channels\` - Info canales\n\`${BOT_PREFIX}dev infiltration [on/off]\`\`, inline: true }
                     )
                     .setFooter({ text: `Prefijo: ${BOT_PREFIX}` })
                     .setColor('#0099ff');
