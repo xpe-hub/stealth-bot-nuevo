@@ -23,7 +23,8 @@ function githubRequest(url, method, data) {
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'User-Agent': 'Stealth-AntiCheat-Bot'
             }
         };
         
@@ -72,7 +73,7 @@ async function uploadFile() {
         
         // 2. Preparar datos para subir
         const encodedContent = Buffer.from(fileContent, 'utf8').toString('base64');
-        const commitMessage = '🔧 Restore: Bot file restored from backup\n\n🎯 Restored bot.js to working state\n🤖 Bot functionality restored\n⚡ Ready for deployment';
+        const commitMessage = 'Restore: Bot file restored from backup';
         
         const uploadData = {
             message: commitMessage,

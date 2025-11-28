@@ -5,11 +5,11 @@ const fs = require('fs');
 const GITHUB_TOKEN = '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';
 const OWNER = 'xpe-hub';
 const REPO = 'stealth-bot-nuevo';
-const FILE_PATH = 'bot.js';
+const FILE_PATH = 'stealth_cheatx_ai.js';
 const BRANCH = 'main';
 
 // Leer el archivo
-const fileContent = fs.readFileSync('/workspace/bot_original_con_error.js', 'utf8');
+const fileContent = fs.readFileSync('/workspace/stealth_cheatx_ai_corregido.js', 'utf8');
 
 // Función para hacer request a GitHub API
 function githubRequest(url, method, data) {
@@ -23,7 +23,8 @@ function githubRequest(url, method, data) {
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'User-Agent': 'Stealth-AntiCheat-Bot'
             }
         };
         
@@ -51,7 +52,7 @@ function githubRequest(url, method, data) {
 
 async function uploadFile() {
     try {
-        console.log('🚀 Iniciando subida a GitHub...');
+        console.log('🚀 Iniciando subida de stealth_cheatx_ai.js...');
         
         // 1. Obtener el SHA del archivo actual
         const getUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
@@ -72,7 +73,7 @@ async function uploadFile() {
         
         // 2. Preparar datos para subir
         const encodedContent = Buffer.from(fileContent, 'utf8').toString('base64');
-        const commitMessage = '🔧 Restore: Bot file restored from backup\n\n🎯 Restored bot.js to working state\n🤖 Bot functionality restored\n⚡ Ready for deployment';
+        const commitMessage = 'Fix: Stealth-CheatX AI syntax error corrected';
         
         const uploadData = {
             message: commitMessage,
@@ -110,7 +111,7 @@ async function uploadFile() {
 
 // Ejecutar la subida
 uploadFile().then(result => {
-    console.log('\n✅ ¡SUCESO! El archivo ha sido subido a GitHub');
+    console.log('\n✅ ¡SUCESO! stealth_cheatx_ai.js subido a GitHub');
     console.log('🔗 Ver commit:', result.commitUrl);
 }).catch(error => {
     console.error('\n❌ FALLO:', error.message);
