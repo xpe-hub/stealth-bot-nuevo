@@ -16,6 +16,9 @@ const { stealthCheatXChat, processStealthCheatXResponse, executeAntiCheatTool } 
 const { analyzeDLL, detectBypassMethods, calculateThreatScore } = require('./anticheat_analyzer_advanced');
 const { connectToRepository, analyzeCommits, getRepositoryStatus } = require('./repository_connector');
 
+// MiniMax TTS Voice System - v3.0
+const { textToSpeech, getAvailableVoices, generateVoiceResponse, handleVoiceJoin, handleVoiceCommand, generateAutonomousResponse } = require('./minimax_tts_direct');
+
 // Configuración del bot
 const client = new Client({
     intents: [
@@ -419,11 +422,11 @@ client.on('messageCreate', async (message) => {
                     .setColor('#00ff00')
                     .addFields(
                         { name: '🤖 IA Conversacional', value: `\`${BOT_PREFIX}ai [mensaje]\` - Consultar IA MiniMax\n\`${BOT_PREFIX}help\` - Lista de comandos\n💬 **Mención:** Habla conmigo sin comandos`, inline: true },
-                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}vc\` - Unirse a tu canal de voz\n\`${BOT_PREFIX}vc random\` - Canal aleatorio con usuarios\n⚡ **Unión automática:** Bot se conecta cuando hablas`, inline: true },
+                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}vc\` - Unirse a tu canal de voz\n\`${BOT_PREFIX}vc random\` - Canal aleatorio con usuarios\n\`${BOT_PREFIX}speak [texto]\` - Texto a voz (TTS)\n\`${BOT_PREFIX}voices\` - Listar voces disponibles`, inline: true },
                         { name: '🛠️ Utilidades', value: `\`${BOT_PREFIX}clear_chat [canal]\` - Limpiar canal AI\n\`${BOT_PREFIX}add_dev [ID]\` - Agregar developers (owner)\n🎯 **Canal:** Solo comandos en #stealth-anticheat-cmd`, inline: true }
                     )
                     .addFields(
-                        { name: '✨ Características v3.0', value: '• 🤖 IA MiniMax con memoria contextual\n• 🎤 Monitoreo anti-cheat en tiempo real\n• 🗣️ Conversación natural (solo mención)\n• 🎯 Sistema de voz avanzado\n• 🔍 Detección automática de amenazas\n• 📊 Análisis inteligente de patrones', inline: false }
+                        { name: '✨ Características v3.0', value: '• 🤖 IA MiniMax con memoria contextual\n• 🎤 Monitoreo anti-cheat en tiempo real\n• 🗣️ Conversación natural (solo mención)\n• 🔊 TTS HD (MiniMax Synthesis)\n• 🎯 Sistema de voz avanzado\n• 🔍 Detección automática de amenazas\n• 📊 Análisis inteligente de patrones', inline: false }
                     )
                     .setFooter({ text: 'Únete a Community Stealth' })
                     .setTimestamp();
@@ -1034,6 +1037,139 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', error => {
     console.error('Uncaught Exception:', error);
     process.exit(1);
+});
+
+// ========================================================
+// COMANDOS DE VOZ TTS v3.0 - MINIMAX VOICE SYNTHESIS
+// ========================================================
+
+// Event listener adicional para comandos de voz con '!'
+client.on('messageCreate', async (message) => {
+    // Solo procesar mensajes que empiecen con ! para comandos de voz
+    if (!message.content.startsWith('!')) return;
+    if (message.author.bot) return;
+    
+    const args = message.content.slice(1).trim().split(/ +/);
+    const voiceCommand = args[0].toLowerCase();
+    
+    try {
+        switch (voiceCommand) {
+            case 'speak':
+            case 'talk':
+            case 'voz':
+                const textArgs = args.slice(1).join(' ').trim();
+                
+                if (!textArgs) {
+                    await message.reply('❌ Especifica texto para hablar. Ej: `!speak Hola mundo`');
+                    return;
+                }
+                
+                // Verificar si el usuario está en canal de voz
+                const userVoiceChannel = message.member.voice.channel;
+                if (!userVoiceChannel) {
+                    await message.reply('❌ Debes estar en un canal de voz para usar TTS. Únete a un canal y prueba nuevamente.');
+                    return;
+                }
+                
+                try {
+                    console.log(`🗣️ TTS: Usuario "${message.author.username}" en ${userVoiceChannel.name}`);
+                    
+                    const ttsResult = await textToSpeech(textArgs, {
+                        emotion: 'happy',
+                        speed: 1.0
+                    });
+                    
+                    const ttsEmbed = new EmbedBuilder()
+                        .setTitle('🗣️ Stealth-AntiCheat TTS')
+                        .setDescription(`**Texto:** ${textArgs}`)
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '🎤 Canal', value: userVoiceChannel.name, inline: true },
+                            { name: '🎵 Formato', value: ttsResult.format || 'MP3', inline: true },
+                            { name: '📻 Audio', value: 'Generado con MiniMax TTS', inline: true }
+                        )
+                        .setFooter({ text: `Por ${message.author.username}` })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [ttsEmbed] });
+                    console.log(`🔊 Audio TTS generado para ${userVoiceChannel.name}`);
+                    
+                } catch (ttsError) {
+                    console.error('❌ Error TTS:', ttsError);
+                    await message.reply(`❌ Error TTS: ${ttsError.message}`);
+                }
+                break;
+
+            case 'voices':
+            case 'voces':
+                try {
+                    console.log('🎭 Obteniendo voces disponibles...');
+                    const voices = await getAvailableVoices();
+                    
+                    const voicesList = voices.map(voice => 
+                        `• **${voice.voice_id}**${voice.name ? ` - ${voice.name}` : ''}`
+                    ).join('\n');
+                    
+                    const voicesEmbed = new EmbedBuilder()
+                        .setTitle('🎭 Voces Disponibles')
+                        .setDescription('Voces TTS de MiniMax disponibles')
+                        .setColor('#0099ff')
+                        .addFields(
+                            { name: '🎤 Voces', value: voicesList.substring(0, 1024), inline: false }
+                        )
+                        .addFields(
+                            { name: '💡 Uso', value: `!speak [texto] [voice_id]`, inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheat | TTS v3.0' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [voicesEmbed] });
+                    
+                } catch (error) {
+                    console.error('❌ Error obteniendo voces:', error);
+                    await message.reply('❌ Error obteniendo lista de voces');
+                }
+                break;
+
+            case 'test-voice':
+            case 'prueba-voz':
+                try {
+                    console.log('🧪 Probando sistema TTS...');
+                    
+                    const testText = 'Este es un test del sistema de síntesis de voz de MiniMax para Stealth-AntiCheatX. El sistema anti-cheat está funcionando correctamente.';
+                    const testResult = await textToSpeech(testText, {
+                        emotion: 'happy',
+                        speed: 0.9
+                    });
+                    
+                    const testEmbed = new EmbedBuilder()
+                        .setTitle('🧪 Test TTS Exitoso')
+                        .setDescription('Sistema de síntesis de voz funcionando correctamente')
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '🗣️ Texto', value: testText.substring(0, 100) + '...', inline: false },
+                            { name: '🎵 Formato', value: testResult.format || 'MP3', inline: true },
+                            { name: '✅ Estado', value: 'MiniMax TTS HD Activo', inline: true }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheat | TTS Test v3.0' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [testEmbed] });
+                    
+                } catch (error) {
+                    console.error('❌ Error en test TTS:', error);
+                    await message.reply(`❌ Error Test TTS: ${error.message}`);
+                }
+                break;
+
+            default:
+                await message.reply(`❌ Comando de voz desconocido: ${voiceCommand}\n\nComandos disponibles:\n• \`!speak [texto]\` - Texto a voz\n• \`!voices\` - Listar voces\n• \`!test-voice\` - Probar TTS`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error en comando de voz:', error);
+        await message.reply('❌ Error ejecutando comando de voz');
+    }
 });
 
 // Login del bot
