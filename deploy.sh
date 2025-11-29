@@ -7,7 +7,8 @@ cd /workspace
 
 # Configurar remote
 echo "Configurando remote..."
-git remote set-url origin https://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@github.com/xpe-hub/stealth-bot-nuevo.git
+GITHUB_TOKEN="${GITHUB_TOKEN:-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}"
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/xpe-hub/stealth-bot-nuevo.git
 
 # Push a GitHub
 echo "Enviando cambios a GitHub..."

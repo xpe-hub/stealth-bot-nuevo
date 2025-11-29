@@ -21,15 +21,15 @@
 
 | Variable | Valor | Descripción |
 |----------|-------|-------------|
-| `DISCORD_BOT_TOKEN` | `MTQ0MTg3ODA3MjUwNzg5MTcyMg.GtM5hc.gCwZut05T36Cqm7YXtPXil-Qo2iCVDPuJFthmw` | Token Discord |
-| `MINIMAX_API_KEY` | `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJ4cGUgcGFuZWxzIiwiVXNlck5hbWUiOiJzdGVhbHRoLW1hbmFnZXItYWkiLCJBY2NvdW50IjoiIiwiU3ViamVjdElEIjoiMTk4ODQ2ODgyOTk4MTc3ODMxOCIsIlBob25lIjoiIiwiR3JvdXBJRCI6IjE5ODg0Njg4Mjk5Nzc1Nzk5MTgiLCJQYWdlTmFtZSI6IiIsIk1haWwiOiJ4cGVwYW5lbGVzQGdtYWlsLmNvbSIsIkNyZWF0ZVRpbWUiOiIyMDI1LTExLTI2IDAwOjE4OjU1IiwiVG9rZW5UeXBlIjoxLCJpc3MiOiJtaW5pbWF4In0.HP47wVjpfhFrLkA-6iGW6ysJYysldKHHbYQgBSxD-mpCrF4DwqQR_Dybs-b3v9L8EkHaZaI-9M8eEwR9nRbFEwMBgNv8Vtp8dU7Oo0_IOo_XphfKzSryo2qb4Vc0AmbKa7YGScuqq4ABUVfIbF2b6uD0pVMgTVXwnizgSzP2fLijUrVnPpnr_SeCX-Aqyvh4D9DKTcF1HP7VswknohnFqxk70mD3RBAiFYrZY4WeTnzcImIrI30S6GoNK0X5ao_DUJKVTpfCnJNqT3e-LwKISN6Az5fz0L_Ocokv7PqY240B0HjXou7aD36WQ8YegaM5StXMsTpoUSOi_R-cCaDSA` | API MiniMax |
-| `BOT_OWNER_ID` | `751601149928538224` | Tu Discord ID |
-| `CHAT_CHANNEL_ID` | `1442266154516091020` | Canal Chat IA |
-| `CMD_CHANNEL_ID` | `1441888236833210389` | Canal Comandos |
-| `SUPPORT_CHANNEL_ID` | `1442209840976887849` | Canal Soporte |
-| `ANTICHEAT_WEBHOOK_URL` | `https://discord.com/api/webhooks/1441660384443498578/cCBalfn0kXDaV3GjdeqyGMbXTqOEoQMyx8yFZRauypmWTpIZlM40xBrOGcsP5wNWzLvM` | Webhook Reportes |
-| `GITHUB_TOKEN` | `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` | Token GitHub |
-| `RAILWAY_TOKEN` | `c5813d10-044e-49fe-bf85-362db75d9738` | Token Railway |
+| `DISCORD_BOT_TOKEN` | `TU_TOKEN_DISCORD_AQUI` | Token Discord |
+| `MINIMAX_API_KEY` | `TU_API_KEY_MINIMAX_AQUI` | API MiniMax |
+| `BOT_OWNER_ID` | `TU_ID_DISCORD_AQUI` | Tu Discord ID |
+| `CHAT_CHANNEL_ID` | `ID_CANAL_CHAT_AQUI` | Canal Chat IA |
+| `CMD_CHANNEL_ID` | `ID_CANAL_COMANDOS_AQUI` | Canal Comandos |
+| `SUPPORT_CHANNEL_ID` | `ID_CANAL_SOPORTE_AQUI` | Canal Soporte |
+| `ANTICHEAT_WEBHOOK_URL` | `TU_WEBHOOK_URL_AQUI` | Webhook Reportes |
+| `GITHUB_TOKEN` | `TU_GITHUB_TOKEN_AQUI` | Token GitHub |
+| `RAILWAY_TOKEN` | `TU_RAILWAY_TOKEN_AQUI` | Token Railway |
 | `ENABLE_DLL_ANALYSIS` | `true` | Activa análisis DLL |
 | `ENABLE_BYPASS_DETECTION` | `true` | Activa bypass detection |
 | `ENABLE_REPOSITORY_MONITORING` | `true` | Activa monitoreo repo |
