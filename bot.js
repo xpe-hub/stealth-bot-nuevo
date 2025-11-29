@@ -598,7 +598,7 @@ client.on('messageCreate', async (message) => {
                         .setDescription('Limpiar mensajes del bot en canales IA')
                         .setColor('#00ff00')
                         .addFields(
-                            { name: '💬 Uso', value: `\\`${BOT_PREFIX}clear_chat\\` - Limpiar canal actual\n\\`${BOT_PREFIX}clear_chat #canal\\` - Limpiar canal específico\n\\`${BOT_PREFIX}clear_chat 123456789\\` - Limpiar por ID`, inline: false },
+                            { name: '💬 Uso', value: `\`${BOT_PREFIX}clear_chat\` - Limpiar canal actual\n\`${BOT_PREFIX}clear_chat #canal\` - Limpiar canal específico\n\`${BOT_PREFIX}clear_chat 123456789\` - Limpiar por ID`, inline: false },
                             { name: '🔒 Canales Permitidos', value: `Canal Chat IA: ${CHAT_CHANNEL_ID}\nCanal CMD: ${CMD_CHANNEL_ID}`, inline: false },
                             { name: '⚡ Función', value: 'Elimina solo mensajes del bot (máximo 50)', inline: false }
                         )
