@@ -12,6 +12,15 @@ const path = require('path');
 // Stealth-CheatX AI Integration - Anti-Cheat Specialist
 const { stealthCheatXChat, processStealthCheatXResponse, executeAntiCheatTool } = require('./stealth_cheatx_ai');
 
+// MiniMax AI Integration - Advanced AI Capabilities
+const minimaxAI = require('./minimax_advanced_ai');
+const minimaxTTS = require('./minimax_tts_direct');
+const anticheatAnalyzer = require('./anticheat_analyzer_advanced');
+const repositoryConnector = require('./repository_connector');
+
+// Axios Wrapper for HTTP requests (replaces axios dependency)
+const axios = require('./axios-wrapper');
+
 // Configuración del bot
 const client = new Client({
     intents: [
@@ -353,7 +362,7 @@ client.on('messageCreate', async (message) => {
                     .setColor('#00ff00') // Verde principal
                     .addFields(
                         { name: '🤖 IA Conversacional', value: `Solo mencióname y hablaremos naturalmente\n\`${BOT_PREFIX}ai [mensaje]\` - Consulta específica`, inline: false },
-                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}join\` - Unirme a tu VC\n\`${BOT_PREFIX}leave\` - Salir del VC\n\`${BOT_PREFIX}vc-status\` - Estado de voz\n\`${BOT_PREFIX}clear_chat [canal/\#canal]\` - Limpiar spam`, inline: false },
+                        { name: '🎤 Sistema de Voz', value: `\`${BOT_PREFIX}join\` - Unirme a tu VC\n\`${BOT_PREFIX}leave\` - Salir del VC\n\`${BOT_PREFIX}vc-status\` - Estado de voz\n\`${BOT_PREFIX}speak [texto]\` - Texto a voz (TTS)\n\`${BOT_PREFIX}voices\` - Ver voces disponibles\n\`${BOT_PREFIX}clear_chat [canal/\#canal]\` - Limpiar spam`, inline: false },
                         { name: '📊 Estado y Utilidades', value: `\`${BOT_PREFIX}add_dev [usuario]\` - Agregar developer\n\`${BOT_PREFIX}status\` - Estado del sistema\n\`${BOT_PREFIX}about\` - Acerca del bot`, inline: true },
                         { name: '🎯 Características IA', value: '• Conversación natural sin comandos\n• Análisis inteligente de texto\n• Respuestas contextuales\n• Sistema de voz integrado\n• Detección automática de amenazas\n• Chat libre en tiempo real', inline: false }
                     )
@@ -396,16 +405,29 @@ client.on('messageCreate', async (message) => {
                     const isCmdChannel = message.channel.id === CMD_CHANNEL_ID;
                     const channelType = isCmdChannel ? 'cmd' : 'chat';
                     
-                    const aiResponse = await stealthCheatXChat(message, channelType);
+                    // Usar MiniMax-Text-01 + VL-01 para respuestas avanzadas
+                    const aiResponse = await minimaxAI.chat({
+                        messages: [
+                            {
+                                role: "system",
+                                content: `Eres un asistente especializado en seguridad y anti-cheat. Contexto: ${channelType}. Responde de forma clara y técnica.`
+                            },
+                            {
+                                role: "user", 
+                                content: aiMessage
+                            }
+                        ],
+                        stream: false
+                    });
                     
                     const aiEmbed = new EmbedBuilder()
                         .setColor('#00ff00')
-                        .setTitle(`🧠 IA MiniMax | ${channelType.toUpperCase()}`)
-                        .setDescription(aiResponse)
+                        .setTitle(`🧠 IA MiniMax-01 | ${channelType.toUpperCase()}`)
+                        .setDescription(aiResponse.choices[0].message.content)
                         .addFields(
                             { name: '👤 Usuario', value: message.author.username, inline: true },
                             { name: '📝 Consulta', value: aiMessage.length > 50 ? aiMessage.substring(0, 50) + '...' : aiMessage, inline: true },
-                            { name: '⚡ Estado', value: 'MiniMax-M2 Activo', inline: true }
+                            { name: '⚡ Modelo', value: 'MiniMax-Text-01 (456B)', inline: true }
                         )
                         .setTimestamp()
                         .setFooter({ text: 'Stealth-AntiCheatX | IA Contextual v3.0' });
@@ -811,6 +833,103 @@ client.on('messageCreate', async (message) => {
                     .setTimestamp();
                 
                 await message.reply({ embeds: [statusEmbed] });
+                break;
+
+            case 'speak':
+            case 'talk':
+            case 'voz':
+                // Comando de Texto a Voz (TTS) con MiniMax
+                const ttsText = args.join(' ').trim();
+                
+                if (!ttsText) {
+                    const helpTTSEmbed = new EmbedBuilder()
+                        .setTitle('🎤 Texto a Voz (TTS)')
+                        .setDescription('Convierte texto a voz con IA avanzada')
+                        .setColor('#00ff00')
+                        .addFields(
+                            { name: '💬 Ejemplo', value: `\`${BOT_PREFIX}speak Hola mundo, soy StealthBot\``, inline: false },
+                            { name: '🎭 Voces', value: `\`${BOT_PREFIX}voices\` - Ver voces disponibles`, inline: false },
+                            { name: '🔊 Calidad', value: 'HD Audio | Múltiples idiomas', inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | TTS HD v3.0' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [helpTTSEmbed] });
+                    break;
+                }
+                
+                try {
+                    console.log(`🎤 TTS: ${message.author.username} solicita: "${ttsText}"`);
+                    
+                    const ttsResult = await minimaxTTS.generateSpeech({
+                        text: ttsText,
+                        voice_id: 'Chinese (Mandarin)_Warm_Bestie',
+                        speed: 0.95,
+                        pitch: -1,
+                        emotion: 'neutral'
+                    });
+                    
+                    if (ttsResult.success && ttsResult.audioUrl) {
+                        const ttsEmbed = new EmbedBuilder()
+                            .setColor('#00ff00')
+                            .setTitle('🎤 Texto a Voz Generado')
+                            .setDescription(`🎵 **Audio:** ${ttsText}`)
+                            .addFields(
+                                { name: '👤 Usuario', value: message.author.username, inline: true },
+                                { name: '🎭 Voz', value: 'Chinese (Mandarin)_Warm_Bestie', inline: true },
+                                { name: '⚡ Calidad', value: 'HD Audio', inline: true }
+                            )
+                            .setTimestamp()
+                            .setFooter({ text: 'Stealth-AntiCheatX | TTS HD v3.0' });
+                        
+                        await message.reply({ 
+                            embeds: [ttsEmbed],
+                            content: ttsResult.audioUrl
+                        });
+                    } else {
+                        throw new Error('No se pudo generar el audio');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error en TTS:', error);
+                    
+                    const errorTTSEmbed = new EmbedBuilder()
+                        .setTitle('❌ Error en Texto a Voz')
+                        .setDescription('No se pudo procesar el texto')
+                        .setColor('#ff0000')
+                        .addFields(
+                            { name: '🔧 Error', value: error.message, inline: false },
+                            { name: '💡 Solución', value: `Verifica: \`${BOT_PREFIX}speak texto\``, inline: false }
+                        )
+                        .setFooter({ text: 'Stealth-AntiCheatX | Error' })
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [errorTTSEmbed] });
+                }
+                break;
+
+            case 'voices':
+            case 'voces':
+                // Listar voces disponibles
+                const voicesEmbed = new EmbedBuilder()
+                    .setTitle('🎭 Voces Disponibles TTS')
+                    .setDescription('Voces HD disponibles para síntesis de voz')
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: '🎤 Voces Principales', value: 
+                            '• Chinese (Mandarin)_Warm_Bestie\n• English_Female_1\n• Spanish_Male_1\n• Japanese_Female_1\n• Korean_Female_1', 
+                          inline: false },
+                        { name: '⚙️ Configuración', value: 
+                            '• Velocidad: 0.5 - 2.0\n• Tono: -10 a +10\n• Emoción: neutral, happy, sad', 
+                          inline: false },
+                        { name: '💡 Uso', value: 
+                            `\`${BOT_PREFIX}speak [texto]\` - Voz por defecto\n\`${BOT_PREFIX}speak [texto] [voz]\` - Voz específica`, 
+                          inline: false }
+                    )
+                    .setFooter({ text: 'Stealth-AntiCheatX | TTS HD v3.0' })
+                    .setTimestamp();
+                
+                await message.reply({ embeds: [voicesEmbed] });
                 break;
 
             default:
