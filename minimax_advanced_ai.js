@@ -6,10 +6,10 @@
 
 const fetch = global.fetch || require('node-fetch');
 
-// Configuración MiniMax
+// Configuración MiniMax - Basado en documentación oficial
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY;
-const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
-const MINIMAX_CHAT_URL = 'https://api.minimaxi.chat/v1/t2a_v2';
+const MINIMAX_BASE_URL = 'https://api.minimax.io/v1'; // Global API - Correcto
+const MINIMAX_TTS_URL = `${MINIMAX_BASE_URL}/audio/synthesis`; // TTS API oficial correcto
 
 // ========================================================
 // 1. MINIMAX-01 TEXT GENERATION (456B Parameter Model)
@@ -28,12 +28,23 @@ async function generateWithMiniMax01(prompt, options = {}) {
         stream: false
     };
 
-    const config = { ...defaultOptions, ...options };
+    const config = Object.assign({}, defaultOptions, options);
 
     try {
         console.log(`🧠 Generando con MiniMax-Text-01 (456B parámetros): "${prompt.substring(0, 50)}..."`);
         
-        const response = await fetch(`${MINIMAX_BASE_URL}/text/chatcompletion_v2`, {
+        // Extraer GroupId del JWT token
+        let groupId = '';
+        try {
+            const payload = JSON.parse(Buffer.from(MINIMAX_API_KEY.split('.')[1], 'base64').toString());
+            groupId = payload.GroupId || payload.groupId || '';
+        } catch (e) {
+            console.warn('⚠️ No se pudo extraer GroupId del token');
+        }
+        
+        const chatUrl = groupId ? `${MINIMAX_BASE_URL}/chat/completions?GroupId=${groupId}` : `${MINIMAX_BASE_URL}/chat/completions`;
+        
+        const response = await fetch(chatUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${MINIMAX_API_KEY}`,
@@ -216,7 +227,18 @@ async function analyzeImageWithVL01(imageUrl, prompt = "Analiza esta imagen en d
     try {
         console.log(`👁️ Analizando imagen con MiniMax-VL-01 (303M parámetros Vision)...`);
         
-        const response = await fetch(`${MINIMAX_BASE_URL}/multimodal/chatcompletion_v2`, {
+        // Extraer GroupId del JWT token
+        let groupId = '';
+        try {
+            const payload = JSON.parse(Buffer.from(MINIMAX_API_KEY.split('.')[1], 'base64').toString());
+            groupId = payload.GroupId || payload.groupId || '';
+        } catch (e) {
+            console.warn('⚠️ No se pudo extraer GroupId del token');
+        }
+        
+        const visionUrl = groupId ? `${MINIMAX_BASE_URL}/chat/completions?GroupId=${groupId}` : `${MINIMAX_BASE_URL}/chat/completions`;
+        
+        const response = await fetch(visionUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${MINIMAX_API_KEY}`,

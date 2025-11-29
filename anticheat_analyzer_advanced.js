@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const axios = require('axios');
+const axios = require('./axios-wrapper.js');
 
 // ======================
 // BASE DE DATOS DE AMENAZAS

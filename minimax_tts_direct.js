@@ -5,9 +5,12 @@
 
 const fetch = require('node-fetch');
 
-// Configuración TTS
+// Configuración TTS - Basado en documentación oficial del blog
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY;
-const TTS_API_URL = 'https://api.minimaxi.chat/v1/t2a_v2';
+const MINIMAX_BASE_URL = 'https://api.minimax.io'; // Global API
+const MINIMAX_CHAT_URL = 'https://api.minimaxi.chat'; // China/TTS API
+const TTS_API_URL = `${MINIMAX_CHAT_URL}/v1/t2a_v2`; // TTS endpoint del blog
+const VOICES_API_URL = `${MINIMAX_CHAT_URL}/v1/voice_list`; // Voces endpoint del blog
 
 // ========================================================
 // FUNCIÓN TTS PRINCIPAL CON API DIRECTA
@@ -19,32 +22,39 @@ async function textToSpeech(text, options = {}) {
     }
 
     const defaultOptions = {
+        model: 'speech-02-hd',  // Modelo del blog oficial
         text: text,
         voice_setting: {
-            voice_id: 'male-qn-qingse',  // Voz masculina por defecto
+            voice_id: 'Chinese (Mandarin)_Warm_Bestie',  // Voz del blog
             speed: 1.0,                  // Velocidad normal
-            vol: 1.0,                    // Volumen normal
-            pitch: 0,                    // Pitch normal
-            audio_sample_rate: 32000,    // 32kHz
-            bitrate: 128000,             // 128kbps
-            format: 'mp3'                // Formato MP3
+            pitch: -1,                   // Pitch del blog
+            emotion: 'neutral'            // Emoción del blog
         },
-        language_boost: 'auto',          // Auto-detección
-        emotion: 'happy',                // Emoción alegre
-        pitch_setting: {
-            enable: true
-        }
+        language_boost: 'Chinese,Yue'    // Language boost del blog
     };
 
-    const config = { ...defaultOptions, ...options };
+    const config = Object.assign({}, defaultOptions, options);
     
     try {
         console.log(`🗣️ TTS API: "${text.substring(0, 50)}..."`);
         
-        const response = await fetch(TTS_API_URL, {
+        // Extraer GroupId del JWT token
+        const apiKey = MINIMAX_API_KEY;
+        let groupId = '';
+        try {
+            // Decodificar JWT para obtener GroupId
+            const payload = JSON.parse(Buffer.from(apiKey.split('.')[1], 'base64').toString());
+            groupId = payload.GroupId || payload.groupId || '';
+        } catch (e) {
+            console.warn('⚠️ No se pudo extraer GroupId del token');
+        }
+        
+        const ttsUrl = groupId ? `${TTS_API_URL}?GroupId=${groupId}` : TTS_API_URL;
+        
+        const response = await fetch(ttsUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${MINIMAX_API_KEY}`,
+                'Authorization': `Bearer ${MINIMAX_API_KEY}`, // Con Bearer como en el blog
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(config)
@@ -61,11 +71,11 @@ async function textToSpeech(text, options = {}) {
             throw new Error(`TTS Error: ${result.base_resp.status_msg}`);
         }
 
-        if (result.data && result.data.audio_file) {
+        if (result.audio_url) {
             console.log('✅ TTS generado exitosamente');
             return {
-                audioUrl: result.data.audio_file,
-                duration: result.data.duration || 0,
+                audioUrl: result.audio_url,
+                duration: result.duration || 0,
                 format: 'mp3'
             };
         }
@@ -82,32 +92,58 @@ async function textToSpeech(text, options = {}) {
 // FUNCIONES DE UTILIDAD TTS
 // ========================================================
 
-// Listar voces disponibles
+// Listar voces disponibles - Usando API oficial
 async function getAvailableVoices() {
     try {
-        const response = await fetch('https://api.minimaxi.chat/v1/voice_list', {
+        console.log('🎭 Obteniendo lista oficial de voces...');
+        
+        // Extraer GroupId para voces
+        let groupId = '';
+        try {
+            const payload = JSON.parse(Buffer.from(MINIMAX_API_KEY.split('.')[1], 'base64').toString());
+            groupId = payload.GroupId || payload.groupId || '';
+        } catch (e) {
+            console.warn('⚠️ No se pudo extraer GroupId del token');
+        }
+        
+        const voicesUrl = groupId ? `${VOICES_API_URL}?GroupId=${groupId}` : VOICES_API_URL;
+        
+        const response = await fetch(voicesUrl, {
             headers: {
-                'Authorization': `Bearer ${MINIMAX_API_KEY}`,
+                'Authorization': MINIMAX_API_KEY, // Sin Bearer prefix
                 'Content-Type': 'application/json'
             }
         });
 
         if (response.ok) {
             const result = await response.json();
-            return result.data?.voice_infos || [];
+            console.log('✅ Voces obtenidas exitosamente');
+            return result.data?.voices || [];
+        } else {
+            console.warn('⚠️ Error obteniendo voces de API:', response.status);
         }
     } catch (error) {
         console.warn('⚠️ No se pudo obtener lista de voces:', error.message);
     }
     
-    // Voces por defecto si no se puede obtener la lista
+    // Voces por defecto basadas en documentación oficial MCP Server
     return [
-        { voice_id: 'male-qn-qingse', name: 'Masculino Qingse' },
-        { voice_id: 'audiobook_female_1', name: 'Audiolibro Femenino 1' },
-        { voice_id: 'cute_boy', name: 'Niño Tierno' },
-        { voice_id: 'Charming_Lady', name: 'Dama Encantadora' },
-        { voice_id: 'male-qn-jingying', name: 'Masculino Elite' },
-        { voice_id: 'female-shaonv', name: 'Femenino Jovial' }
+        // Voces masculinas
+        { voice_id: 'male-qn-qingse', name: 'Masculino Qingse', category: 'male' },
+        { voice_id: 'male-qn-jingying', name: 'Masculino Elite', category: 'male' },
+        { voice_id: 'audiobook_male_1', name: 'Audiolibro Masculino 1', category: 'male' },
+        { voice_id: 'professional_male', name: 'Masculino Profesional', category: 'male' },
+        
+        // Voces femeninas
+        { voice_id: 'female-shaonv', name: 'Femenino Jovial', category: 'female' },
+        { voice_id: 'Charming_Lady', name: 'Dama Encantadora', category: 'female' },
+        { voice_id: 'audiobook_female_1', name: 'Audiolibro Femenino 1', category: 'female' },
+        { voice_id: 'professional_female', name: 'Femenino Profesional', category: 'female' },
+        
+        // Voces especiales
+        { voice_id: 'cute_boy', name: 'Niño Tierno', category: 'child' },
+        { voice_id: 'gentle_voice', name: 'Voz Tierna', category: 'special' },
+        { voice_id: 'energetic_voice', name: 'Voz Enérgica', category: 'special' }
     ];
 }
 
