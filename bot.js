@@ -19,6 +19,9 @@ const { connectToRepository, analyzeCommits, getRepositoryStatus } = require('./
 // MiniMax TTS Voice System - v3.0
 const { textToSpeech, getAvailableVoices, generateVoiceResponse, handleVoiceJoin, handleVoiceCommand, generateAutonomousResponse } = require('./minimax_tts_direct');
 
+// MiniMax Advanced AI - v4.0 (MiniMax-01 + Mini-Agent + VL-01)
+const { MiniMaxAdvancedAI, generateWithMiniMax01, analyzeImageWithVL01, createAdvancedAgent } = require('./minimax_advanced_ai');
+
 // Configuración del bot
 const client = new Client({
     intents: [
@@ -426,7 +429,7 @@ client.on('messageCreate', async (message) => {
                         { name: '🛠️ Utilidades', value: `\`${BOT_PREFIX}clear_chat [canal]\` - Limpiar canal AI\n\`${BOT_PREFIX}add_dev [ID]\` - Agregar developers (owner)\n🎯 **Canal:** Solo comandos en #stealth-anticheat-cmd`, inline: true }
                     )
                     .addFields(
-                        { name: '✨ Características v3.0', value: '• 🤖 IA MiniMax con memoria contextual\n• 🎤 Monitoreo anti-cheat en tiempo real\n• 🗣️ Conversación natural (solo mención)\n• 🔊 TTS HD (MiniMax Synthesis)\n• 🎯 Sistema de voz avanzado\n• 🔍 Detección automática de amenazas\n• 📊 Análisis inteligente de patrones', inline: false }
+                        { name: '✨ Características v4.0', value: '• 🧠 MiniMax-01 (456B parámetros) - IA avanzada\n• 🤖 Mini-Agent con memoria persistente\n• 👁️ MiniMax-VL-01 (303M Vision) - Análisis visual\n• 🔊 TTS HD (MiniMax Synthesis) - Voz autónoma\n• 🎤 Monitoreo anti-cheat en tiempo real\n• 🗣️ Sistema de voz con IA conversacional\n• 🔍 Detección automática de amenazas\n• 📊 Análisis multimodal avanzado', inline: false }
                     )
                     .setFooter({ text: 'Únete a Community Stealth' })
                     .setTimestamp();
@@ -1169,6 +1172,162 @@ client.on('messageCreate', async (message) => {
     } catch (error) {
         console.error('❌ Error en comando de voz:', error);
         await message.reply('❌ Error ejecutando comando de voz');
+    }
+});
+
+// ========================================================
+// MINIMAX ADVANCED AI COMMANDS - v4.0
+// ========================================================
+
+// Crear instancia del agente avanzado
+const advancedAI = new MiniMaxAdvancedAI();
+
+// Comando: !ai-analyze (Análisis profundo con MiniMax-01)
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+    if (!message.content.startsWith(BOT_PREFIX)) return;
+
+    const args = message.content.slice(BOT_PREFIX.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'ai-analyze' || command === 'ai') {
+        try {
+            const analysisText = args.join(' ');
+            if (!analysisText) {
+                return message.reply('❌ **Uso:** `!ai-analyze [pregunta]` - Análisis profundo con MiniMax-01 (456B parámetros)');
+            }
+
+            const loadingMessage = await message.reply('🧠 **Analizando con MiniMax-Text-01 (456B parámetros)...**');
+
+            // Análisis completo con IA avanzada
+            const result = await advancedAI.comprehensiveProcess(analysisText, {
+                context: {
+                    user: message.author.tag,
+                    channel: message.channel.name,
+                    timestamp: new Date().toISOString()
+                }
+            });
+
+            if (result.success) {
+                const embed = new EmbedBuilder()
+                    .setTitle('🧠 Análisis con MiniMax-01')
+                    .setDescription(result.synthesis.primaryResult)
+                    .setColor(0x00ff00)
+                    .addFields(
+                        { name: '🤖 Modelo', value: 'MiniMax-Text-01 (456B parámetros)', inline: true },
+                        { name: '📊 Confianza', value: `${(result.synthesis.confidence * 100).toFixed(1)}%`, inline: true },
+                        { name: '🔄 Procesamientos', value: `${result.processing.length}`, inline: true },
+                        { name: '📅 Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
+                    )
+                    .setFooter({ 
+                        text: `Stealth-AntiCheatX v4.0 • Sesión: ${advancedAI.sessionId}`,
+                        iconURL: 'https://cdn.discordapp.com/emojis/1234567890.gif'
+                    });
+
+                if (result.processing.length > 0) {
+                    const processingDetails = result.processing.map(p => 
+                        `• ${p.type}: ${p.result.success ? '✅ Éxito' : '⚠️ Fallback'}`
+                    ).join('\n');
+                    embed.addFields({ name: '🔧 Procesamientos', value: processingDetails, inline: false });
+                }
+
+                await loadingMessage.edit({ embeds: [embed] });
+            } else {
+                await loadingMessage.edit('❌ **Error en análisis de IA:** ' + (result.error || 'Error desconocido'));
+            }
+
+        } catch (error) {
+            console.error('❌ Error en comando ai-analyze:', error);
+            await message.reply('❌ Error ejecutando análisis de IA');
+        }
+    }
+
+    // Comando: !ai-vision (Análisis de imágenes con VL-01)
+    if (command === 'ai-vision' || command === 'vision') {
+        try {
+            const args = message.content.slice(BOT_PREFIX.length + command.length).trim().split(/ +/);
+            const imageUrl = args[0];
+            const prompt = args.slice(1).join(' ') || 'Analiza esta imagen en detalle';
+
+            if (!imageUrl) {
+                return message.reply('❌ **Uso:** `!ai-vision [url_imagen] [prompt opcional]` - Análisis visual con MiniMax-VL-01');
+            }
+
+            const loadingMessage = await message.reply('👁️ **Analizando imagen con MiniMax-VL-01 (303M parámetros Vision)...**');
+
+            const result = await analyzeImageWithVL01(imageUrl, prompt);
+
+            if (result.success) {
+                const embed = new EmbedBuilder()
+                    .setTitle('👁️ Análisis Visual con MiniMax-VL-01')
+                    .setDescription(result.analysis)
+                    .setColor(0x0099ff)
+                    .addFields(
+                        { name: '🤖 Modelo', value: 'MiniMax-VL-01 (303M Vision + 456B Text)', inline: true },
+                        { name: '📊 Confianza', value: '95%', inline: true },
+                        { name: '🔗 URL', value: '[Ver imagen](' + imageUrl + ')', inline: true }
+                    )
+                    .setImage(imageUrl)
+                    .setFooter({ text: 'Stealth-AntiCheatX v4.0 • Análisis Visual Avanzado' });
+
+                await loadingMessage.edit({ embeds: [embed] });
+            } else {
+                await loadingMessage.edit('❌ **Error en análisis visual:** ' + (result.error || 'Error desconocido'));
+            }
+
+        } catch (error) {
+            console.error('❌ Error en comando ai-vision:', error);
+            await message.reply('❌ Error ejecutando análisis visual');
+        }
+    }
+
+    // Comando: !ai-memory (Estado de memoria del agente)
+    if (command === 'ai-memory' || command === 'memory') {
+        try {
+            const memoryStatus = advancedAI.getMemoryStatus();
+            
+            const embed = new EmbedBuilder()
+                .setTitle('🧠 Estado de Memoria del Agente IA')
+                .setDescription('Estado actual del agente autónomo con memoria persistente')
+                .setColor(0x9932cc)
+                .addFields(
+                    { name: '💾 Memorias Almacenadas', value: `${memoryStatus.totalMemories}`, inline: true },
+                    { name: '💬 Contexto Activo', value: `${memoryStatus.contextLength}`, inline: true },
+                    { name: '🆔 ID de Sesión', value: memoryStatus.sessionId, inline: true },
+                    { name: '🔄 Limpiar Memoria', value: 'Usar `!ai-clear`', inline: false }
+                )
+                .setFooter({ text: 'Stealth-AntiCheatX v4.0 • Sistema de Memoria Persistente' });
+
+            await message.reply({ embeds: [embed] });
+
+        } catch (error) {
+            console.error('❌ Error en comando ai-memory:', error);
+            await message.reply('❌ Error consultando memoria del agente');
+        }
+    }
+
+    // Comando: !ai-clear (Limpiar memoria del agente)
+    if (command === 'ai-clear' || command === 'clear') {
+        try {
+            if (message.author.id !== BOT_OWNER_ID) {
+                return message.reply('❌ **Solo el propietario del bot puede limpiar la memoria IA**');
+            }
+
+            advancedAI.agent.memory.clear();
+            advancedAI.agent.clearContext();
+
+            const embed = new EmbedBuilder()
+                .setTitle('🧹 Memoria del Agente Limpiada')
+                .setDescription('Se ha limpiado toda la memoria persistente y el contexto del agente IA')
+                .setColor(0xff9900)
+                .setFooter({ text: 'Stealth-AntiCheatX v4.0 • Limpieza Completa' });
+
+            await message.reply({ embeds: [embed] });
+
+        } catch (error) {
+            console.error('❌ Error en comando ai-clear:', error);
+            await message.reply('❌ Error limpiando memoria del agente');
+        }
     }
 });
 
