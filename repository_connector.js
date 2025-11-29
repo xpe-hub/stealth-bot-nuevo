@@ -57,7 +57,7 @@ const REPOSITORY_CONFIG = {
 // TOKEN DE ACCESO (DEBE CONFIGURARSE)
 // ======================
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // ======================
 // CLASE CONECTORA DEL REPOSITORIO
