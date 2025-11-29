@@ -12,6 +12,10 @@ const path = require('path');
 // Stealth-CheatX AI Integration - Anti-Cheat Specialist
 const { stealthCheatXChat, processStealthCheatXResponse, executeAntiCheatTool } = require('./stealth_cheatx_ai');
 
+// Advanced Anti-Cheat Modules Integration - v3.0
+const { analyzeDLL, detectBypassMethods, calculateThreatScore } = require('./anticheat_analyzer_advanced');
+const { connectToRepository, analyzeCommits, getRepositoryStatus } = require('./repository_connector');
+
 // Configuración del bot
 const client = new Client({
     intents: [
