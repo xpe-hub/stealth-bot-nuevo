@@ -1,5 +1,5 @@
 // ========================================================
-// STEALTH-ANTICHEATX - BOT MEJORADO 2025-11-28
+// STEALTH-ANTICHEATX - BOT MEJORADO 2025-12-03
 // Bio cada 10min + VC robusto + Reconocimiento canales
 // CON IA MINIMAX REAL + Comandos avanzados + Estilo Stealth
 // ========================================================
