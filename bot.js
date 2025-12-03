@@ -148,26 +148,44 @@ client.on('messageCreate', async (message) => {
     
     // Comando Unirse a Voz
     if (message.content.startsWith(`${BOT_PREFIX}join`)) {
-        if (!message.member.voice.channel) {
+        // Verificar si el usuario está en un canal de voz
+        if (!message.member || !message.member.voice || !message.member.voice.channel) {
             const errorEmbed = createStealthEmbed(
                 'Error de Conexión',
-                '❌ Debes estar en un canal de voz para usar este comando.',
+                '❌ **Debes estar en un canal de voz** para usar este comando.\n\n💡 **Pasos:**\n1. Únete a cualquier canal de voz\n2. Usa `$join` nuevamente',
                 0xFF0000
             );
             return message.channel.send({ embeds: [errorEmbed] });
         }
         
         try {
-            // Conectar al canal de voz
+            // Verificar que el canal sigue existiendo
             const voiceChannel = message.member.voice.channel;
+            if (!voiceChannel || !voiceChannel.joinable) {
+                const errorEmbed = createStealthEmbed(
+                    'Error de Conexión',
+                    '❌ No se puede acceder al canal de voz. Verifica que el canal existe.',
+                    0xFF0000
+                );
+                return message.channel.send({ embeds: [errorEmbed] });
+            }
+            
+            // Desconectar de canal anterior si está conectado
+            if (voiceConnection) {
+                voiceConnection.disconnect();
+                voiceConnection = null;
+            }
+            
+            // Conectar al canal de voz
             voiceConnection = await voiceChannel.join();
             currentVoiceChannel = voiceChannel;
             
             const joinEmbed = createStealthEmbed(
                 'Conectado a Voz',
-                `✅ Conectado exitosamente a **${voiceChannel.name}**
-🎤 Calidad: Optimizada
-🛡️ Sistema Anti-Cheat Activo en Voz`
+                `✅ **Conectado exitosamente a:** ${voiceChannel.name}
+🎤 **Calidad:** Optimizada
+🛡️ **Sistema:** Anti-Cheat Activo
+🔧 **Comando:** ${BOT_PREFIX}leave para salir`
             );
             
             message.channel.send({ embeds: [joinEmbed] });
@@ -176,7 +194,8 @@ client.on('messageCreate', async (message) => {
             console.error('Error conectando a voz:', error);
             const errorEmbed = createStealthEmbed(
                 'Error de Conexión',
-                '❌ No se pudo conectar al canal de voz.',
+                `❌ **No se pudo conectar al canal de voz**
+🛠️ **Error:** ${error.message || 'Error desconocido'}`,
                 0xFF0000
             );
             message.channel.send({ embeds: [errorEmbed] });
@@ -185,32 +204,46 @@ client.on('messageCreate', async (message) => {
     
     // Comando Salir de Voz
     if (message.content.startsWith(`${BOT_PREFIX}leave`)) {
-        if (!voiceConnection) {
+        if (!voiceConnection || !currentVoiceChannel) {
             const errorEmbed = createStealthEmbed(
                 'No Conectado',
-                '❌ El bot no está conectado a ningún canal de voz.',
-                0xFF0000
+                '❌ **El bot no está conectado a ningún canal de voz.**\n\n💡 **Usa** `${BOT_PREFIX}join` **para conectarse**',
+                0xFFA500
             );
             return message.channel.send({ embeds: [errorEmbed] });
         }
         
         try {
+            const channelName = currentVoiceChannel.name;
+            
             if (voiceConnection) {
                 voiceConnection.disconnect();
+                voiceConnection.destroy();
                 voiceConnection = null;
             }
             currentVoiceChannel = null;
             
             const leaveEmbed = createStealthEmbed(
                 'Desconectado de Voz',
-                '👋 Desconectado del canal de voz.
-🛡️ Sistema Anti-Cheat sigue activo.'
+                `👋 **Desconectado del canal:** ${channelName}
+🛡️ **Sistema:** Anti-Cheat sigue activo
+🔧 **Comando:** ${BOT_PREFIX}join para conectarse`
             );
             
             message.channel.send({ embeds: [leaveEmbed] });
             
         } catch (error) {
             console.error('Error desconectando de voz:', error);
+            // Limpiar estado local aunque haya error
+            voiceConnection = null;
+            currentVoiceChannel = null;
+            
+            const errorEmbed = createStealthEmbed(
+                'Desconectado',
+                '👋 **Desconectado del canal de voz**\n🛡️ Sistema Anti-Cheat sigue activo',
+                0xFFA500
+            );
+            message.channel.send({ embeds: [errorEmbed] });
         }
     }
     
